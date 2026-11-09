@@ -2,324 +2,179 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Mind — робот больше не повторяет траекторию</title>
-  <meta name="description" content="Редакционный разбор современных роботов: замкнутый контур чувство — решение — действие, как к ним подключаются и какие модели ими управляют. Ноябрь 2026.">
-  <meta name="theme-color" content="#09090f">
+  <meta name="description" content="Один фильм о современной петле роботов: чувство, решение, действие, связь и модели. Ноябрь 2026.">
+  <meta name="theme-color" content="#07070c">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="preload" href="fonts/cormorant-garamond-cyrillic-500-italic.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/hero.webp" as="image">
   <link rel="stylesheet" href="css/fonts.css">
   <link rel="stylesheet" href="css/styles.css">
   <script>
-    (function () {
-      try {
-        var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-        if (!reduce) document.documentElement.classList.add("motion");
-        if (!reduce && window.matchMedia("(min-width: 960px)").matches) {
-          document.documentElement.classList.add("motion-x");
-        }
-      } catch (e) {}
-    })();
+    try {
+      if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        document.documentElement.classList.add("is-film");
+      }
+    } catch (e) {}
   </script>
 </head>
 <body>
-  <a class="skip" href="#content">К содержанию</a>
-  <div class="progress" aria-hidden="true"><span></span></div>
-  <header class="site-header">
-    <a class="brand" href="#hero">
-      <span class="mark" aria-hidden="true">
-        <span class="mark-m">M</span>
-        <span class="mark-tick"></span>
-      </span>
-      <span class="brand-name">Mind</span>
-      <span class="sr-only">Наверх</span>
-    </a>
-    <nav class="site-nav" aria-label="Разделы">
-      <a href="#loop">Петля</a>
-      <a href="#connect">Связь</a>
-      <a href="#field">Поле</a>
-      <a href="#models">Модели</a>
-    </nav>
-    <p class="chapter-name">Пролог</p>
-    <p class="timecode" aria-hidden="true">00:00</p>
-  </header>
-
-  <main id="content">
-    <section class="hero" id="hero">
-      <div class="hero-media">
-        <img src="assets/hero.webp" width="864" height="1152" alt="Гуманоид уходит по тёмному бетонному коридору к единственному огню. Оригинальный кадр, не пресс-фото." fetchpriority="high">
+  <a class="skip" href="#film">К фильму</a>
+  <main id="film" class="reel">
+    <article class="beat" data-id="hero-title" data-media="hero">
+      <div class="media">
+        <video poster="assets/hero.webp" muted playsinline webkit-playsinline autoplay loop preload="metadata" disablepictureinpicture>
+          <source src="assets/hero-corridor.mp4" type="video/mp4">
+        </video>
       </div>
-      <div class="hero-copy">
-        <p class="kicker">Контур · ноябрь 2026</p>
-        <h1>
-          <span class="line"><span class="line-inner">Робот</span></span>
-          <span class="line"><span class="line-inner">больше не</span></span>
-          <span class="line"><span class="line-inner">повторяет</span></span>
-          <span class="line"><span class="line-inner">траекторию.</span></span>
-        </h1>
-        <p class="hero-lede">Современная машина не проигрывает файл с точками. Она каждый такт снимает мир, сверяет его с собственным телом и отвечает движением. Камера, модель и привод — одна петля. Пока петля разомкнута, это станок.</p>
-        <p class="hero-aside"><span class="live-dot" aria-hidden="true"></span>Петля сходится на теле, не в облаке.</p>
+      <div class="shade"></div>
+      <div class="copy">
+        <h1>Робот<br>больше не<br>повторяет<br>траекторию.</h1>
       </div>
-    </section>
+    </article>
 
-    <section class="loop" id="loop" data-phase="sense">
-      <h2 class="sr-only">Как устроена петля: чувствует, думает, действует</h2>
-      <div class="loop-sticky">
-        <div class="loop-rail">
-          <span class="rail-track" aria-hidden="true"><span class="rail-fill"></span></span>
-          <button type="button" class="rail-btn" data-index="0" aria-current="true"><span class="sr-only">Чувствует</span><span aria-hidden="true">01</span></button>
-          <button type="button" class="rail-btn" data-index="1"><span class="sr-only">Думает</span><span aria-hidden="true">02</span></button>
-          <button type="button" class="rail-btn" data-index="2"><span class="sr-only">Действует</span><span aria-hidden="true">03</span></button>
-        </div>
-
-        <article class="beat" data-beat="sense">
-          <figure class="beat-visual">
-            <img src="assets/sense.webp" width="1152" height="864" alt="Макросъёмка визора робота: тёмное стекло, объектив и металлическая оправа на винтах.">
-          </figure>
-          <div class="beat-copy">
-            <p class="beat-kicker">Sense · 01</p>
-            <h2>Чувствует</h2>
-            <p class="beat-text">Сырьё петли — не одно зрение, а несколько часов. Кадр приходит десятки раз в секунду. Энкодер, гироскоп и датчик момента — сотни и тысячи. Проприоцепция знает, где рука относительно робота. Камера — где чашка относительно комнаты. Пока ответы не сведены, захват остаётся догадкой.</p>
-            <p class="beat-meta">камеры 10–60 Гц · IMU и энкодеры 100–1000 Гц · иногда лидар и тактильные матрицы</p>
-            <svg class="trace" viewBox="0 0 320 28" aria-hidden="true" focusable="false">
-              <path d="M0 16 H18 L26 5 L34 23 L42 8 L50 21 L58 16 H320"/>
-            </svg>
-          </div>
-        </article>
-
-        <article class="beat" data-beat="think">
-          <figure class="beat-visual">
-            <img src="assets/think.webp" width="1280" height="720" alt="Гуманоид в профиль стоит у ночной кухни напротив двух мисок и стакана.">
-          </figure>
-          <div class="beat-copy">
-            <p class="beat-kicker">Think · 02</p>
-            <h2>Думает</h2>
-            <p class="beat-text">Поток становится состоянием. Где стоит тело — SLAM или визуальная одометрия. Что вокруг — сцена, а не пиксели. Что делать — политика. Всё чаще это vision-language-action: картинка и короткая фраза на входе, кусок траектории на выходе. Большая модель может жить на станции рядом. В контуре баланса её нет. Связь моргнула — робот всё равно стоит.</p>
-            <p class="beat-meta">политика чаще 10–50 Гц · баланс считается отдельно и быстрее</p>
-            <svg class="trace" viewBox="0 0 320 28" aria-hidden="true" focusable="false">
-              <path d="M0 20 H48 V8 H96 V20 H160 V9 H210 V20 H320"/>
-            </svg>
-          </div>
-        </article>
-
-        <article class="beat" data-beat="act">
-          <figure class="beat-visual">
-            <img src="assets/act.webp" width="864" height="1152" alt="Металлическая пятипалая рука смыкается на керамической чашке в тёплом свете.">
-            <span class="warm-edge" aria-hidden="true"></span>
-          </figure>
-          <div class="beat-copy">
-            <p class="beat-kicker">Act · 03</p>
-            <h2>Действует</h2>
-            <p class="beat-text">Низкий уровень переводит намерение в ток: импеданс, момент, положение. Сотни герц, на силовых осях — около килогерца. Телеоперация показывает пример. Дальше та же петля исполняет сама, и ошибка сенсора возвращается в следующий такт. Это уже не файл с точками. Это тело, которое успевает передумать.</p>
-            <p class="beat-meta">моментные контуры · сотни герц · ошибка возвращается сразу</p>
-            <svg class="trace" viewBox="0 0 320 28" aria-hidden="true" focusable="false">
-              <path d="M0 18 C40 18 70 6 110 8 S190 24 250 13 310 16 320 16"/>
-            </svg>
-          </div>
-        </article>
+    <article class="beat" data-id="hero-line" data-media="hero">
+      <div class="media">
+        <img src="assets/hero.webp" width="864" height="1152" alt="">
       </div>
-    </section>
-
-    <section class="connect" id="connect">
-      <div class="connect-head">
-        <div>
-          <p class="kicker">Связь</p>
-          <h2>
-            <span class="line"><span class="line-inner">К нему</span></span>
-            <span class="line"><span class="line-inner">подключаются</span></span>
-            <span class="line"><span class="line-inner">слоями.</span></span>
-          </h2>
-        </div>
-        <p class="connect-deck">Снаружи почти никогда не крутят сустав. Снаружи отдают намерение и забирают состояние. Ток остаётся внутри — иначе любая пауза в сети роняет тело.</p>
+      <div class="shade"></div>
+      <div class="copy">
+        <p class="lead">Она снимает мир, сверяет его с собственным телом и отвечает движением. Пока петля разомкнута, это станок.</p>
       </div>
-      <div class="ledger-wrap">
-        <div class="filament" aria-hidden="true"><span></span></div>
-        <ol class="ledger">
-          <li>
-            <span class="idx">01</span>
-            <h3>ROS 2</h3>
-            <p>Шина, на которой говорит исследование и большая часть открытых платформ. Топики, сервисы, actions. Навигация — Nav2, манипуляция — MoveIt 2, железо — ros2_control. Коммерческий гуманоид может не отдать весь граф, но язык вокруг него всё равно этот.</p>
-          </li>
-          <li>
-            <span class="idx">02</span>
-            <h3>SDK</h3>
-            <p>Spot открывает Python-клиент: состояние, сенсоры, миссии, свои полезные нагрузки. Unitree отдаёт unitree_sdk2 — моторы и локомоцию поверх Cyclone DDS. Figure, 1X и Tesla такую дверь не публикуют. Подключиться и купить робота — разные предложения.</p>
-          </li>
-          <li>
-            <span class="idx">03</span>
-            <h3>Телеоперация</h3>
-            <p>VR, копирующий манипулятор, экзоскелет. Человек делает — робот записывает. Так собирают демонстрации для политики. У 1X это ещё и продукт: режим Expert, когда сложное дело ведёт удалённый оператор, а не автономная модель.</p>
-          </li>
-          <li>
-            <span class="idx">04</span>
-            <h3>Борт</h3>
-            <p>Маленькая сеть рядом с моторами. Jetson или свой вычислитель: локомоция, хват, рефлексы. Задержка важнее числа параметров. На устройстве живёт дистиллят большой модели, а не она сама.</p>
-          </li>
-          <li>
-            <span class="idx">05</span>
-            <h3>Станция</h3>
-            <p>Планы, логи, обновление весов, флот. Figure прямо связывает растущий парк с обучением Helix. Облако ставит цель. Ток в колене считает тот, кто стоит на полу. Пауза канала не должна быть падением.</p>
-          </li>
-          <li>
-            <span class="idx">06</span>
-            <h3>MCP</h3>
-            <p>Языковой агент вызывает навыки как инструменты — иди, посмотри, возьми, — а не градусы суставов. В заметке к Spot 5.2 Boston Dynamics описывает основу такого слоя у Orbit: агент отправляет робота на осмотр, когда сработала логика предприятия. Это оркестрация. Баланс под ней наружу не отдаётся.</p>
-          </li>
-        </ol>
+    </article>
+
+    <article class="beat" data-id="sense" data-media="sense">
+      <div class="media">
+        <img src="assets/sense.webp" width="1152" height="864" alt="Макросъёмка визора: стекло, объектив и металл. Оригинальный кадр, не пресс-фото.">
       </div>
-    </section>
+      <div class="shade"></div>
+      <div class="copy top">
+        <h2>Чувствует</h2>
+        <p>Кадр приходит десятки раз в секунду. Энкодер и гироскоп — сотни и тысячи. Пока эти ответы не сведены, захват остаётся догадкой.</p>
+      </div>
+    </article>
 
-    <div id="field">
-      <section class="field-intro">
-        <p class="kicker">Поле · ноябрь 2026</p>
-        <h2>Пять тел. Ни одно не является просто API.</h2>
-        <p>Дальше не каталог. У каждой машины свой слой доступа, и у некоторых этого слоя для постороннего нет.</p>
-      </section>
+    <article class="beat" data-id="think" data-media="think">
+      <div class="media">
+        <img src="assets/think.webp" width="1280" height="720" alt="Гуманоид стоит в тёмной кухне напротив мисок и стакана. Оригинальный кадр.">
+      </div>
+      <div class="shade"></div>
+      <div class="copy">
+        <h2>Думает</h2>
+        <p>Картинка и короткая фраза становятся куском траектории. Баланс считается отдельно и быстрее. Связь может моргнуть — ноги остаются.</p>
+      </div>
+    </article>
 
-      <section class="field" aria-label="Платформы">
-        <div class="field-track">
-          <article class="plate plate-figure">
-            <div class="plate-media">
-              <img src="assets/factory.webp" width="1280" height="720" alt="Гуманоид на пустом заводском полу рядом с серыми ящиками. Оригинальный кадр, не фотография Figure.">
-            </div>
-            <div class="plate-copy">
-              <p class="plate-kicker">01 · закрытая модель</p>
-              <h3 class="plate-name">Figure 03</h3>
-              <p>Helix ведёт тело целиком, от шага до пальцев. В сентябре 2026 Helix 2.5 зашла в тридцать незнакомых домов без дообучения на месте. На трёх бытовых делах полный успех вырос с 9% до 56%, когда сеть предварительно учили на датасете Index. Завод — BotQ. В июне Figure сообщила, что роботы приехали на BMW в Спартанберг. Открытого SDK нет.</p>
-              <p class="shot-note">Кадр — исследование формы, не пресс-фото Figure.</p>
-            </div>
-          </article>
+    <article class="beat" data-id="act" data-media="act">
+      <div class="media">
+        <img src="assets/act.webp" width="864" height="1152" alt="Металлическая рука смыкается на керамической чашке в тёплом свете.">
+      </div>
+      <div class="shade"></div>
+      <div class="copy top">
+        <h2>Действует</h2>
+        <p>Намерение становится током. Сотни герц, на силовых осях около килогерца. Ошибка сенсора возвращается в следующий такт.</p>
+      </div>
+    </article>
 
-          <article class="plate plate-split plate-neo">
-            <div class="plate-copy">
-              <p class="plate-kicker">02 · дом</p>
-              <h3 class="plate-name">1X NEO</h3>
-              <p>Домашний гуманоид в раннем доступе: на странице заказа поставки в США обозначены на 2026 год. Redwood повторяет уже выученные дела. 1X World Model устроена иначе, чем классическая VLA. По фразе и кадру она снимает короткое видео будущего, а обратная модель достаёт из него движение. В разборе компании инференс занимал около одиннадцати секунд на пять секунд видео. Сложное закрывает человек в режиме Expert.</p>
-              <p class="shot-note">Кадр — исследование формы, не пресс-фото 1X.</p>
-            </div>
-            <div class="plate-media">
-              <img src="assets/home.webp" width="864" height="1152" alt="Гуманоид стоит в утренней гостиной у дивана и окна. Оригинальный кадр, не фотография 1X.">
-            </div>
-          </article>
+    <article class="beat" data-id="factory" data-media="factory">
+      <div class="media">
+        <img src="assets/factory.webp" width="1280" height="720" alt="Гуманоид на пустом заводском полу у серых ящиков. Не фотография Figure.">
+      </div>
+      <div class="shade"></div>
+      <div class="copy">
+        <h2>Figure 03</h2>
+        <p>Helix ведёт всё тело. В сентябре 2026, в тридцати чужих домах, полный успех на трёх бытовых делах вырос с 9% до 56% после датасета Index. Открытого SDK нет.</p>
+      </div>
+    </article>
 
-          <article class="plate plate-split plate-bd">
-            <div class="plate-media">
-              <img src="assets/quad.webp" width="1280" height="720" alt="Четвероногий робот стоит в бетонном промышленном коридоре. Собирательный образ, не пресс-фото Spot.">
-            </div>
-            <div class="plate-copy">
-              <p class="plate-kicker">03 · цех и осмотр</p>
-              <h3 class="plate-name">Atlas и Spot</h3>
-              <p>Электрический Atlas в продуктовой версии показали на CES в январе 2026. Поставки этого года отданы Hyundai — центр RMAC в Саванне открыт в сентябре — и Google DeepMind. Следующих заказчиков компания называет на начало 2027. К цеху Atlas стыкуется через Orbit. Spot — другой продукт: серийный четвероногий с открытым Python SDK. В релизе 5.2 описана основа MCP-слоя для агентов.</p>
-              <p class="shot-note">Собирательный кадр, не пресс-фото Boston Dynamics.</p>
-            </div>
-          </article>
+    <article class="beat" data-id="home" data-media="home">
+      <div class="media">
+        <img src="assets/home.webp" width="864" height="1152" alt="Гуманоид в утренней гостиной. Не фотография 1X.">
+      </div>
+      <div class="shade"></div>
+      <div class="copy">
+        <h2>NEO</h2>
+        <p>1X обозначила поставки в США на 2026 год. Мировая модель сначала снимает видео будущего — около одиннадцати секунд на пять секунд ролика — и только потом достаёт движение.</p>
+      </div>
+    </article>
 
-          <article class="plate plate-type plate-unitree">
-            <p class="plate-kicker">04 · открытое тело</p>
-            <h3 class="plate-name">Unitree</h3>
-            <p class="addr">192.168.123.0/24 · Cyclone DDS · ROS 2</p>
-            <p>G1 и H1 — тела, у которых есть адрес. unitree_sdk2 и unitree_ros2 говорят с моторами; низкий уровень отдают, документация живёт. G1 EDU бывает на 23 и 29 степенях свободы, с трёхпалыми руками Dex3-1, в том числе с тактильными датчиками. Открытые VLA, включая линейку NVIDIA GR00T, исследовательские группы ставят на такие платформы. Это не мозг в комплекте. Это робот, которого можно вызвать из своей программы.</p>
-          </article>
+    <article class="beat" data-id="quad" data-media="quad">
+      <div class="media">
+        <img src="assets/quad.webp" width="1280" height="720" alt="Четвероногий робот в бетонном коридоре. Собирательный кадр, не пресс-фото Spot.">
+      </div>
+      <div class="shade"></div>
+      <div class="copy">
+        <h2>Atlas и Spot</h2>
+        <p>Электрический Atlas показали на CES в январе 2026. Этот год отдан Hyundai и DeepMind. Spot — другой зверь: серийный, с открытым Python SDK.</p>
+      </div>
+    </article>
 
-          <article class="plate plate-type plate-optimus">
-            <p class="plate-kicker">05 · завод без интерфейса</p>
-            <h3 class="plate-name">Optimus</h3>
-            <p>В письме за третий квартал 2026 Tesla написала, что производство началось во Фримонте и с линии сходят первые боты «производственного качества». На отчётном звонке Маск назвал это ранним рампом: руку ещё меняют, до открытых задач модели далеко, внешние поставки он отнёс примерно к концу 2027 года. Опубликованной модели и SDK нет.</p>
-            <p class="quiet-line">Факт завода, не факт интерфейса</p>
-          </article>
-        </div>
-      </section>
-    </div>
+    <article class="beat" data-id="unitree" data-media="quad">
+      <div class="media">
+        <img src="assets/quad.webp" width="1280" height="720" alt="">
+      </div>
+      <div class="shade"></div>
+      <div class="copy">
+        <h2>Unitree</h2>
+        <p>G1 и H1 отдают моторы через unitree_sdk2 и ROS 2. Это тело с адресом, не мозг в комплекте.</p>
+      </div>
+    </article>
 
-    <section class="models" id="models">
-      <div class="models-head">
-        <p class="kicker">Модели</p>
+    <article class="beat" data-id="optimus" data-media="quad">
+      <div class="media">
+        <img src="assets/quad.webp" width="1280" height="720" alt="">
+      </div>
+      <div class="shade"></div>
+      <div class="copy">
+        <h2>Optimus</h2>
+        <p>В третьем квартале 2026 Tesla назвала Фримонт ранним рампом. Внешние поставки — примерно конец 2027. Опубликованной модели нет.</p>
+      </div>
+    </article>
+
+    <article class="beat" data-id="layers" data-media="quad">
+      <div class="media">
+        <img src="assets/quad.webp" width="1280" height="720" alt="">
+      </div>
+      <div class="shade"></div>
+      <div class="copy">
+        <h2>Слои</h2>
+        <p>Снаружи отдают намерение. ROS 2, SDK, телеоперация, борт, станция. Агент вызывает навык. Баланс наружу не отдают.</p>
+      </div>
+    </article>
+
+    <article class="beat" data-id="models" data-media="quad">
+      <div class="media">
+        <img src="assets/quad.webp" width="1280" height="720" alt="">
+      </div>
+      <div class="shade"></div>
+      <div class="copy">
         <h2>Чем они думают</h2>
-        <p class="deck">Картинка и фраза всё чаще становятся командой. Под ними контур прежний: редко и сложно наверху, быстро и локально внизу.</p>
+        <p>Helix и 1XWM закрыты. openpi отдаёт π0, π0-FAST и π0.5. GR00T можно доучить. У Gemini шире открыто рассуждение, не сама VLA.</p>
       </div>
+    </article>
 
-      <article class="model">
-        <h3>Helix</h3>
-        <div>
-          <p class="model-note">Figure · закрыто</p>
-          <p>Собственная сеть. Helix 02, январь 2026, связала сенсоры со всем телом, включая шаг. System 0 — выученный контроллер целиком; Figure пишет, что он заменил больше ста тысяч строк ручного C++. Helix 2.5 учили на датасете Index и проверяли вне лаборатории. Веса наружу не отдают.</p>
-        </div>
-      </article>
-      <article class="model">
-        <h3>1XWM</h3>
-        <div>
-          <p class="model-note">1X · видео, затем действие</p>
-          <p>Не классическая VLA. Сначала воображаемое видео, потом извлечение траектории. Поэтому модель пробует незнакомый предмет и пока плохо умеет реакцию: одиннадцать секунд на пять секунд ролика — это мысль, не рефлекс. Рядом живёт Redwood — модель уже выученных домашних дел.</p>
-        </div>
-      </article>
-      <article class="model">
-        <h3>openpi</h3>
-        <div>
-          <p class="model-note">Physical Intelligence · частично открыто</p>
-          <p>В репозитории openpi лежат π0, π0-FAST и π0.5, лицензия Apache-2.0. Более поздние версии компания оставляет партнёрам. Это главный открытый путь научить манипуляцию, если есть свои демонстрации, а не чужой закрытый гуманоид.</p>
-        </div>
-      </article>
-      <article class="model">
-        <h3>GR00T</h3>
-        <div>
-          <p class="model-note">NVIDIA Isaac · открытая линейка</p>
-          <p>Vision-language-action для гуманоидов. Её показывают в том числе на Unitree G1. Код открыт, веса — на условиях лицензии NVIDIA, базовый языковой каркас может требовать отдельного доступа. Смысл для разработчика: политику можно доучить и унести на свой вычислитель.</p>
-        </div>
-      </article>
-      <article class="model">
-        <h3>Gemini</h3>
-        <div>
-          <p class="model-note">DeepMind · стек, не один файл</p>
-          <p>У Gemini Robotics шире открыта модель рассуждения. Сама VLA и компактный on-device вариант идут через ранний доступ. DeepMind в 2026 году ещё и получает парк Atlas. Это соседство двух компаний, а не доказательство, что на коммерческом Atlas крутится публичная модель.</p>
-        </div>
-      </article>
-      <article class="model">
-        <h3>Борт</h3>
-        <div>
-          <p class="model-note">Все · два времени</p>
-          <p>Локомоция почти нигде не живёт в той же сети, что разговор. Баланс считается на роботе, сотни раз в секунду. Станция, облако и агент ставят цель, разбирают логи, обновляют веса. MCP и родственные вызовы инструментов выбирают навык. Они не выдают ток.</p>
-        </div>
-      </article>
-    </section>
-
-    <section class="close" id="close">
-      <img class="close-bg" src="assets/act.webp" width="864" height="1152" alt="" loading="lazy">
-      <div class="close-scrim" aria-hidden="true"></div>
-      <div class="close-inner">
-        <p class="kicker">Колофон</p>
-        <h2>
-          <span class="line"><span class="line-inner">Петля</span></span>
-          <span class="line"><span class="line-inner">уже</span></span>
-          <span class="line"><span class="line-inner">замкнута<span class="period-final">.</span></span></span>
-        </h2>
-        <p class="close-lead">Осталось честно назвать свой слой. Кто крутит сустав из чата — ещё не управляет роботом. Кто отдаёт намерение и оставляет баланс на теле — уже в этом году.</p>
-        <div class="colophon">
-          <div>
-            <h3>Что это</h3>
-            <p>Mind — редакционный разбор на ноябрь 2026 года. Мы не продаём роботов и не представляем компании, о которых пишем. Кадры — оригинальные съёмки вымышленной машины: так устроена форма, не каталог. Цифры взяты из публичных сообщений самих компаний и не округлялись в их пользу. Частоты в петле — типичный порядок величин для этого класса машин, не спецификация конкретной модели.</p>
-          </div>
-          <div>
-            <h3>Источники</h3>
-            <ul class="sources">
-              <li><a href="https://www.figure.ai/news/helix-02" target="_blank" rel="noopener noreferrer">Figure, Helix 02<span class="sr-only">, откроется в новой вкладке</span></a></li>
-              <li><a href="https://www.figure.ai/news/helix-2-5-zero-shot-30-home-generalization" target="_blank" rel="noopener noreferrer">Figure, Helix 2.5<span class="sr-only">, откроется в новой вкладке</span></a></li>
-              <li><a href="https://bostondynamics.com/blog/boston-dynamics-unveils-new-atlas-robot-to-revolutionize-industry/" target="_blank" rel="noopener noreferrer">Boston Dynamics, Atlas, CES 2026<span class="sr-only">, откроется в новой вкладке</span></a></li>
-              <li><a href="https://github.com/boston-dynamics/spot-sdk" target="_blank" rel="noopener noreferrer">Spot SDK<span class="sr-only">, откроется в новой вкладке</span></a></li>
-              <li><a href="https://bostondynamics.com/blog/the-missing-piece-of-your-ai-stack/" target="_blank" rel="noopener noreferrer">Boston Dynamics, Spot 5.2<span class="sr-only">, откроется в новой вкладке</span></a></li>
-              <li><a href="https://www.1x.tech/discover/world-model-self-learning" target="_blank" rel="noopener noreferrer">1X World Model<span class="sr-only">, откроется в новой вкладке</span></a></li>
-              <li><a href="https://www.1x.tech/ai" target="_blank" rel="noopener noreferrer">1X, Redwood и NEO<span class="sr-only">, откроется в новой вкладке</span></a></li>
-              <li><a href="https://github.com/unitreerobotics/unitree_sdk2" target="_blank" rel="noopener noreferrer">Unitree SDK2<span class="sr-only">, откроется в новой вкладке</span></a></li>
-              <li><a href="https://github.com/Physical-Intelligence/openpi" target="_blank" rel="noopener noreferrer">Physical Intelligence, openpi<span class="sr-only">, откроется в новой вкладке</span></a></li>
-              <li><a href="https://ir.tesla.com/" target="_blank" rel="noopener noreferrer">Tesla, материалы для акционеров<span class="sr-only">, откроется в новой вкладке</span></a></li>
-            </ul>
-          </div>
-        </div>
-        <p class="endmark">Mind · ноябрь 2026 · контур</p>
+    <article class="beat" data-id="close" data-media="quad">
+      <div class="media">
+        <img src="assets/quad.webp" width="1280" height="720" alt="">
       </div>
-    </section>
+      <div class="shade"></div>
+      <div class="copy">
+        <h2>Петля уже<br>замкнута.</h2>
+        <p class="quiet">Mind — разбор на ноябрь 2026. Кадры — вымышленная машина. Частоты — порядок величин, не спецификация одной модели. Цифры взяты из публичных сообщений компаний.</p>
+        <ul class="sources">
+          <li><a href="https://www.figure.ai/news/helix-2-5-zero-shot-30-home-generalization" target="_blank" rel="noopener noreferrer">Figure, Helix 2.5</a></li>
+          <li><a href="https://www.figure.ai/news/helix-02" target="_blank" rel="noopener noreferrer">Figure, Helix 02</a></li>
+          <li><a href="https://bostondynamics.com/blog/boston-dynamics-unveils-new-atlas-robot-to-revolutionize-industry/" target="_blank" rel="noopener noreferrer">Boston Dynamics, Atlas</a></li>
+          <li><a href="https://github.com/boston-dynamics/spot-sdk" target="_blank" rel="noopener noreferrer">Spot SDK</a></li>
+          <li><a href="https://www.1x.tech/discover/world-model-self-learning" target="_blank" rel="noopener noreferrer">1X World Model</a></li>
+          <li><a href="https://github.com/unitreerobotics/unitree_sdk2" target="_blank" rel="noopener noreferrer">Unitree SDK2</a></li>
+          <li><a href="https://github.com/Physical-Intelligence/openpi" target="_blank" rel="noopener noreferrer">openpi</a></li>
+          <li><a href="https://ir.tesla.com/" target="_blank" rel="noopener noreferrer">Tesla, III квартал 2026</a></li>
+        </ul>
+      </div>
+    </article>
   </main>
-
   <script src="js/vendor/gsap.min.js"></script>
   <script src="js/vendor/ScrollTrigger.min.js"></script>
   <script src="js/main.js"></script>

@@ -1,0 +1,136 @@
+{
+  "current": "z-forward",
+  "closeVector": "up",
+  "transitions": ["hard-cut-mid-push", "type-from-darkness"],
+  "seam": "Each seam is a hard cut while both shots are inside a linear push of the same velocity. The scale value jumps because the shot changes; the speed does not. Stillness is a plateau inside the beat, before the climax push, never a stop at the cut. No crossfade. The up-vector is only the close.",
+  "approach": 0.36,
+  "hold": 0.28,
+  "climax": 0.36,
+  "beats": [
+    {
+      "id": "hero-title",
+      "media": "hero",
+      "cut": false,
+      "span": 11,
+      "scale0": 1.04,
+      "delta": 0.04,
+      "origin": "62% 42%",
+      "enter": "immediate"
+    },
+    {
+      "id": "hero-line",
+      "media": "hero",
+      "cut": false,
+      "span": 10,
+      "delta": 0.04,
+      "origin": "62% 42%",
+      "enter": "hold"
+    },
+    {
+      "id": "sense",
+      "media": "sense",
+      "cut": true,
+      "span": 11,
+      "scale0": 1.05,
+      "delta": 0.04,
+      "origin": "50% 62%",
+      "enter": "hold"
+    },
+    {
+      "id": "think",
+      "media": "think",
+      "cut": true,
+      "span": 11,
+      "scale0": 1.05,
+      "delta": 0.04,
+      "origin": "28% 46%",
+      "enter": "hold"
+    },
+    {
+      "id": "act",
+      "media": "act",
+      "cut": true,
+      "span": 12,
+      "scale0": 1.05,
+      "delta": 0.045,
+      "origin": "70% 46%",
+      "enter": "hold"
+    },
+    {
+      "id": "factory",
+      "media": "factory",
+      "cut": true,
+      "span": 11,
+      "scale0": 1.04,
+      "delta": 0.04,
+      "origin": "32% 40%",
+      "enter": "hold"
+    },
+    {
+      "id": "home",
+      "media": "home",
+      "cut": true,
+      "span": 11,
+      "scale0": 1.04,
+      "delta": 0.04,
+      "origin": "50% 28%",
+      "enter": "hold"
+    },
+    {
+      "id": "quad",
+      "media": "quad",
+      "cut": true,
+      "span": 11,
+      "scale0": 1.04,
+      "delta": 0.035,
+      "origin": "50% 48%",
+      "enter": "hold"
+    },
+    {
+      "id": "unitree",
+      "media": "quad",
+      "cut": false,
+      "span": 10,
+      "delta": 0.035,
+      "origin": "50% 48%",
+      "enter": "hold"
+    },
+    {
+      "id": "optimus",
+      "media": "quad",
+      "cut": false,
+      "span": 10,
+      "delta": 0.035,
+      "origin": "50% 48%",
+      "enter": "hold"
+    },
+    {
+      "id": "layers",
+      "media": "quad",
+      "cut": false,
+      "span": 10,
+      "delta": 0.03,
+      "origin": "50% 48%",
+      "enter": "hold"
+    },
+    {
+      "id": "models",
+      "media": "quad",
+      "cut": false,
+      "span": 11,
+      "delta": 0.03,
+      "origin": "50% 48%",
+      "enter": "hold"
+    },
+    {
+      "id": "close",
+      "media": "quad",
+      "cut": false,
+      "span": 12,
+      "vector": "up",
+      "y": -6,
+      "origin": "50% 42%",
+      "enter": "immediate"
+    }
+  ]
+}
