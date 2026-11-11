@@ -1,162 +1,1089 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Mind — робот больше не повторяет траекторию</title>
-  <meta name="description" content="Одна фигура в темноте. Камера идёт вдоль машины: сенсоры, приводы, баланс. Ноябрь 2026.">
-  <meta name="theme-color" content="#09090f">
-  <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="css/styles.css">
-  <script>
-    try {
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-        document.documentElement.classList.add("is-still");
-      }
-    } catch (e) {}
-  </script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#09090f">
+<title>Современные роботы — устройство, подключение и AI-модели | MIND Robotics</title>
+<meta name="description" content="Как устроены современные роботы: классы машин, контур управления от сенсоров до актуаторов, подключение через ROS 2, SDK и LLM-агентов, VLA-модели RT-2, OpenVLA, π0, GR00T N1, Gemini Robotics и Helix.">
+<meta name="author" content="MIND">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Роботы, которые понимают физический мир — MIND Robotics">
+<meta property="og:description" content="Классы машин, контур управления, интеграция через ROS 2 и SDK, vision-language-action модели и маршрут для новичка.">
+<meta property="og:image" content="media/generated/hero-humanoid.webp">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="media/favicon.svg" type="image/svg+xml">
+<link rel="preload" as="image" href="media/generated/hero-humanoid.webp" fetchpriority="high">
+<link rel="preload" as="font" type="font/woff2" href="media/fonts/inter-cyr-800.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="media/fonts/inter-cyr-400.woff2" crossorigin>
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/style.css">
+<script>document.documentElement.classList.add('js');</script>
 </head>
 <body>
-  <a class="skip" href="#reading">К тексту</a>
-  <canvas id="stage"></canvas>
-  <div id="vignette" aria-hidden="true"></div>
-  <div id="grain" aria-hidden="true"></div>
-  <div id="frame" aria-hidden="true"></div>
-  <div class="frame-b" aria-hidden="true"></div>
-  <div class="cols" aria-hidden="true"></div>
-  <div class="ruler" aria-hidden="true"></div>
-  <div class="band" aria-hidden="true"></div>
-  <div class="rail" aria-hidden="true"><span id="rail-fill"></span></div>
-  <p class="index" id="hud-index">01<span>/05</span></p>
-  <p class="coords" id="hud-coords">X 0.00 · Y 0.00</p>
 
-  <header class="top">
-    <a class="mark" href="#reading">M</a>
-    <span class="word">Mind</span>
-  </header>
+<a class="skip" href="#main">К содержанию</a>
 
-  <svg id="leaders" aria-hidden="true"></svg>
+<div class="pre" id="pre" aria-hidden="true">
+  <div class="pre__mark">M</div>
+  <div class="pre__bar"><i id="preBar"></i></div>
+</div>
 
-  <div class="plate" id="plate">
-    <div class="copy" id="title" data-beat="0">
-      <p class="kicker">Ноябрь 2026</p>
-      <h1>Робот больше не повторяет траекторию.</h1>
+<div class="fx-grain" aria-hidden="true"></div>
+<div class="fx-vig" aria-hidden="true"></div>
+<div class="progress" id="progress" aria-hidden="true"></div>
+<div class="cursor" id="cursor" aria-hidden="true"></div>
+<div class="cursor-dot" id="cursorDot" aria-hidden="true"></div>
+
+<!-- ======================= NAV ======================= -->
+<header class="nav" id="nav">
+  <div class="shell nav__in">
+    <a class="brand" href="#top" aria-label="MIND Robotics — наверх">
+      <span class="brand__m" aria-hidden="true">M</span>
+      <span>MIND<small>Robotics</small></span>
+    </a>
+
+    <nav class="nav__links" id="navLinks" aria-label="Разделы">
+      <a href="#classes">Классы</a>
+      <a href="#how">Контур</a>
+      <a href="#connect">Подключение</a>
+      <a href="#models">Модели</a>
+      <a href="#start">Старт</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+
+    <a class="btn btn--main btn--sm nav__cta" href="#connect" data-magnetic>
+      <span class="btn__t">Подключить робота</span>
+    </a>
+
+    <button class="burger" id="burger" aria-expanded="false" aria-controls="sheet" aria-label="Меню">
+      <i aria-hidden="true"></i><i aria-hidden="true"></i><i aria-hidden="true"></i>
+    </button>
+  </div>
+</header>
+
+<div class="sheet" id="sheet" aria-hidden="true">
+  <ul>
+    <li><a href="#classes">Классы машин</a></li>
+    <li><a href="#how">Контур управления</a></li>
+    <li><a href="#connect">Подключение</a></li>
+    <li><a href="#models">AI-модели</a></li>
+    <li><a href="#start">С чего начать</a></li>
+    <li><a href="#faq">FAQ</a></li>
+  </ul>
+  <div class="sheet__foot mono">MIND · ROBOTICS · 2026</div>
+</div>
+
+<main id="main">
+<span id="top"></span>
+
+<!-- ======================= HERO ======================= -->
+<section class="hero" id="hero">
+  <div class="hero__media" aria-hidden="true">
+    <img id="heroImg" src="media/generated/hero-humanoid.webp" width="1280" height="720"
+         alt="" fetchpriority="high" decoding="async">
+  </div>
+  <div class="hero__scrim" aria-hidden="true"></div>
+
+  <div class="shell hero__in">
+    <h1 class="d1" data-split>Роботы, которые понимают физический мир</h1>
+
+    <div class="hero__side">
+      <p class="lead">У современного робота десятки сенсоров, замкнутый контур управления
+      и нейросеть, которая превращает кадр и текстовую инструкцию в команды на приводы.</p>
+
+      <div class="btn-row" style="margin-top:var(--s4)">
+        <a class="btn btn--main" href="#how" data-magnetic>
+          <span class="btn__t">Как работает контур</span>
+          <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 2v12M3 9.5 8 14.5l5-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <a class="btn btn--ghost" href="#connect" data-magnetic>
+          <span class="btn__t">Подключить робота</span>
+        </a>
+      </div>
     </div>
 
-    <aside class="call" data-beat="1" data-anchor="visor">
-      <p class="idx">Сенсоры</p>
-      <p class="fig">10–60<span>Гц</span></p>
-      <p class="note">Кадр. Порядок величины, не паспорт Apollo.</p>
-    </aside>
-    <aside class="call" data-beat="1" data-anchor="neck">
-      <p class="idx">Гироскоп</p>
-      <p class="fig">100–1000<span>Гц</span></p>
-      <p class="note">Энкодер и гироскоп. Тоже порядок, не паспорт.</p>
-    </aside>
-    <aside class="call" data-beat="1" data-anchor="headside" data-phone="off">
-      <p class="idx">Сведение</p>
-      <p class="fig">один<span>такт</span></p>
-      <p class="note">Пока ответы не сведены, захват остаётся догадкой.</p>
-    </aside>
-
-    <aside class="call" data-beat="2" data-anchor="shoulder">
-      <p class="idx">Приводы</p>
-      <p class="fig">~1<span>кГц</span></p>
-      <p class="note">Силовой контур на осях. Не спецификация Apollo.</p>
-    </aside>
-    <aside class="call" data-beat="2" data-anchor="elbow" data-phone="off">
-      <p class="idx">Ось</p>
-      <p class="fig">сотни<span>Гц</span></p>
-      <p class="note">Намерение становится током. Ошибка возвращается в такт.</p>
-    </aside>
-    <aside class="call" data-beat="2" data-anchor="neck">
-      <p class="idx">Шея</p>
-      <p class="fig">локально</p>
-      <p class="note">Баланс считается отдельно и быстрее языка.</p>
-    </aside>
-
-    <aside class="call" data-beat="3" data-anchor="chest">
-      <p class="idx">Баланс</p>
-      <p class="fig">локально</p>
-      <p class="note">Ноги остаются на своём контуре.</p>
-    </aside>
-    <aside class="call" data-beat="3" data-anchor="hip">
-      <p class="idx">Таз</p>
-      <p class="fig">быстрее</p>
-      <p class="note">Языковая политика не держит равновесие.</p>
-    </aside>
-    <aside class="call" data-beat="3" data-anchor="waist" data-phone="off">
-      <p class="idx">Связь</p>
-      <p class="fig">может<span>моргнуть</span></p>
-      <p class="note">Обрыв канала не роняет стойку.</p>
-    </aside>
-
-    <div class="copy" id="close" data-beat="4">
-      <h2>Петля уже замкнута.</h2>
-      <p class="credit">Модель: Apptronik Apollo, Apache-2.0, © 2024 Apptronik, via MuJoCo Menagerie.</p>
-    </div>
-  </div>
-
-  <div id="loader">
-    <div class="loader-line" aria-hidden="true"><span id="loader-bar"></span></div>
-    <p>ЗАГРУЗКА</p>
-  </div>
-
-  <div id="drive"></div>
-
-  <article id="reading" class="reading">
-    <p class="kicker">Mind</p>
-    <h1>Робот больше не повторяет траекторию.</h1>
-    <p>Она снимает мир, сверяет его с собственным телом и отвечает движением. Камера, модель и привод — одна петля. Пока петля разомкнута, это станок.</p>
-
-    <h2>Чувствует</h2>
-    <p>Кадр приходит десятки раз в секунду. Энкодер и гироскоп — сотни и тысячи. Пока эти ответы не сведены, захват остаётся догадкой.</p>
-
-    <h2>Думает</h2>
-    <p>Картинка и короткая фраза становятся куском траектории. Баланс считается отдельно и быстрее. Связь может моргнуть — ноги остаются.</p>
-
-    <h2>Действует</h2>
-    <p>Намерение становится током. Сотни герц, на силовых осях около килогерца. Ошибка сенсора возвращается в следующий такт.</p>
-
-    <h2>Figure 03</h2>
-    <p>Helix ведёт всё тело. В сентябре 2026, в тридцати чужих домах, полный успех на трёх бытовых делах вырос с 9% до 56% после датасета Index. Открытого SDK нет.</p>
-
-    <h2>NEO</h2>
-    <p>1X обозначила поставки в США на 2026 год. Мировая модель сначала снимает видео будущего — около одиннадцати секунд на пять секунд ролика — и только потом достаёт движение.</p>
-
-    <h2>Atlas и Spot</h2>
-    <p>Электрический Atlas показали на CES в январе 2026. Этот год отдан Hyundai и DeepMind. Spot — другой зверь: серийный, с открытым Python SDK.</p>
-
-    <h2>Unitree</h2>
-    <p>G1 и H1 отдают моторы через unitree_sdk2 и ROS 2. Это тело с адресом, не мозг в комплекте.</p>
-
-    <h2>Optimus</h2>
-    <p>В третьем квартале 2026 Tesla назвала Фримонт ранним рампом. Внешние поставки — примерно конец 2027. Опубликованной модели нет.</p>
-
-    <h2>Слои</h2>
-    <p>Снаружи отдают намерение. ROS 2, SDK, телеоперация, борт, станция. Агент вызывает навык. Баланс наружу не отдают.</p>
-
-    <h2>Чем они думают</h2>
-    <p>Helix и 1XWM закрыты. openpi отдаёт π0, π0-FAST и π0.5. GR00T можно доучить. У Gemini шире открыто рассуждение, не сама VLA.</p>
-
-    <h2>Петля уже замкнута.</h2>
-    <p>Mind — разбор на ноябрь 2026. Частоты — порядок величин, не спецификация Apollo и не спецификация одной модели. Цифры взяты из публичных сообщений компаний.</p>
-    <p>Модель: Apptronik Apollo, Apache-2.0, © 2024 Apptronik, via MuJoCo Menagerie.</p>
-    <ul>
-      <li><a href="https://www.figure.ai/news/helix-2-5-zero-shot-30-home-generalization">Figure, Helix 2.5</a></li>
-      <li><a href="https://www.figure.ai/news/helix-02">Figure, Helix 02</a></li>
-      <li><a href="https://bostondynamics.com/blog/boston-dynamics-unveils-new-atlas-robot-to-revolutionize-industry/">Boston Dynamics, Atlas</a></li>
-      <li><a href="https://github.com/boston-dynamics/spot-sdk">Spot SDK</a></li>
-      <li><a href="https://www.1x.tech/discover/world-model-self-learning">1X World Model</a></li>
-      <li><a href="https://github.com/unitreerobotics/unitree_sdk2">Unitree SDK2</a></li>
-      <li><a href="https://github.com/Physical-Intelligence/openpi">openpi</a></li>
-      <li><a href="https://ir.tesla.com/">Tesla, III квартал 2026</a></li>
-      <li><a href="https://github.com/google-deepmind/mujoco_menagerie/tree/main/apptronik_apollo">MuJoCo Menagerie, Apollo</a></li>
+    <ul class="hero__kpi">
+      <li><b>Воплощённый ИИ</b> <span>VLA: кадр + инструкция → действие</span></li>
+      <li><b>Контур 1 кГц</b> <span>управление моментами в реальном времени</span></li>
+      <li><b>ROS 2 и SDK</b> <span>открытый стек плюс API производителя</span></li>
     </ul>
-  </article>
+  </div>
 
-  <script src="js/vendor/gsap.min.js"></script>
-  <script src="js/vendor/ScrollTrigger.min.js"></script>
-  <script src="js/film.js"></script>
+  <div class="hero__scroll" aria-hidden="true">
+    <span class="mono">Скролл</span><i></i>
+  </div>
+</section>
+
+<!-- ======================= NUMBERS ======================= -->
+<section class="ribbon" aria-label="Цифры отрасли">
+  <div class="ribbon__grid">
+    <div class="ribbon__cell">
+      <span class="ribbon__n"><span data-count="4.28" data-dec="2">4,28</span><span class="ribbon__u">млн</span></span>
+      <p class="ribbon__d">промышленных роботов работает на производствах мира</p>
+      <p class="ribbon__s">IFR World Robotics · парк на конец 2023</p>
+    </div>
+    <div class="ribbon__cell">
+      <span class="ribbon__n"><span data-count="162">162</span></span>
+      <p class="ribbon__d">робота на 10 000 занятых в промышленности — средняя плотность</p>
+      <p class="ribbon__s">IFR, 2023 · лидер — Республика Корея</p>
+    </div>
+    <div class="ribbon__cell">
+      <span class="ribbon__n"><span data-count="970">970</span><span class="ribbon__u">тыс.</span></span>
+      <p class="ribbon__d">эпизодов реальных роботов в датасете, на котором обучена OpenVLA</p>
+      <p class="ribbon__s">подмножество Open X-Embodiment</p>
+    </div>
+    <div class="ribbon__cell">
+      <span class="ribbon__n"><span data-count="200">200</span><span class="ribbon__u">Гц</span></span>
+      <p class="ribbon__d">частота визуомоторной политики System 1 в Figure Helix</p>
+      <p class="ribbon__s">публикация Figure AI, 2025</p>
+    </div>
+  </div>
+</section>
+
+<div class="marquee" aria-hidden="true">
+  <div class="marquee__t" id="marquee">
+    <span>Tesla Optimus</span><span>Figure 02 / 03</span><span>Unitree G1 · H1</span><span>Atlas · Spot</span>
+    <span>Agility Digit</span><span>ANYmal</span><span>ROS 2</span><span>MoveIt 2</span><span>Nav2</span>
+    <span>Isaac Lab</span><span>MuJoCo</span><span>LeRobot</span><span>OpenVLA</span><span>π0</span>
+    <span>GR00T N1</span><span>Gemini Robotics</span><span>Helix</span><span>RT-2</span><span>EtherCAT</span><span>MCP</span>
+  </div>
+</div>
+
+<!-- ======================= CLASSES ======================= -->
+<section id="classes" aria-labelledby="classesH">
+  <div class="sec" style="padding-bottom:clamp(48px,7vw,88px)">
+    <div class="shell sec__head">
+      <p class="eyebrow">Классы машин</p>
+      <h2 class="d2" id="classesH" data-split>Шесть очень разных машин под одним словом</h2>
+      <p class="prose r-up">От шестиосевых манипуляторов с повторяемостью в сотые доли миллиметра
+      до гуманоидов, которые учатся по демонстрациям. У каждого класса своя зрелость, цена
+      и область, где он работает.</p>
+    </div>
+  </div>
+
+  <div class="panels">
+
+    <!-- 1 humanoids -->
+    <article class="panel">
+      <div class="panel__media" aria-hidden="true">
+        <img src="media/generated/hero-humanoid.webp" width="1280" height="720" alt="" loading="lazy" decoding="async">
+      </div>
+      <div class="panel__scrim" aria-hidden="true"></div>
+      <p class="shell tag panel__label r-fade">Humanoids</p>
+      <div class="shell panel__in">
+        <div>
+          <h3 class="d3 panel__t r-up">Гуманоиды</h3>
+          <p class="panel__p r-up">Двуногие платформы антропоморфной формы: расчёт на человеческую
+          среду — лестницы, стеллажи, инструменты. Самый молодой и самый быстро меняющийся класс.</p>
+        </div>
+        <div class="facts r-up">
+          <dl class="facts__list">
+            <div><dt>Примеры</dt><dd>Tesla Optimus, Figure 02 / 03, Unitree G1 и H1, Boston Dynamics Atlas, Agility Digit</dd></div>
+            <div><dt>Габариты</dt><dd>обычно 1,2–1,9 м, 30–90 кг; десятки активных степеней свободы</dd></div>
+          </dl>
+          <details class="facts__more" open>
+            <summary>Подробнее</summary>
+            <dl class="facts__list">
+              <div><dt>Статус</dt><dd>пилоты на производстве и в логистике; универсальность пока ниже демонстраций</dd></div>
+              <div><dt>Факт</dt><dd>Atlas нового поколения (2024) — полностью электрический, без гидравлики</dd></div>
+            </dl>
+          </details>
+        </div>
+      </div>
+    </article>
+
+    <!-- 2 quadrupeds -->
+    <article class="panel">
+      <div class="panel__media" aria-hidden="true">
+        <img src="media/generated/quadruped.webp" width="1280" height="720" alt="" loading="lazy" decoding="async">
+      </div>
+      <div class="panel__scrim" aria-hidden="true"></div>
+      <p class="shell tag panel__label r-fade">Quadrupeds</p>
+      <div class="shell panel__in">
+        <div>
+          <h3 class="d3 panel__t r-up">Квадропеды</h3>
+          <p class="panel__p r-up">Самый практичный на сегодня мобильный формат: проходят лестницы
+          и завалы, куда не едет колёсная платформа, и уже работают инспекционными обходчиками.</p>
+        </div>
+        <div class="facts r-up">
+          <dl class="facts__list">
+            <div><dt>Примеры</dt><dd>Boston Dynamics Spot, ANYbotics ANYmal, Unitree Go2 и B2</dd></div>
+            <div><dt>Задачи</dt><dd>обходы по маршруту, съём показаний приборов, термо- и газоконтроль, съёмка объектов</dd></div>
+          </dl>
+          <details class="facts__more" open>
+            <summary>Подробнее</summary>
+            <dl class="facts__list">
+              <div><dt>Автономность</dt><dd>порядка 1,5–2 часов хода; зарядные док-станции для круглосуточных обходов</dd></div>
+              <div><dt>Порог входа</dt><dd>потребительские модели — от ~$1 600; промышленные — десятки тысяч $</dd></div>
+            </dl>
+          </details>
+        </div>
+      </div>
+    </article>
+
+    <!-- 3 industrial -->
+    <article class="panel">
+      <div class="panel__media" aria-hidden="true">
+        <img src="media/generated/industrial-arm.webp" width="1280" height="720" alt="" loading="lazy" decoding="async">
+      </div>
+      <div class="panel__scrim" aria-hidden="true"></div>
+      <p class="shell tag panel__label r-fade">Industrial arms</p>
+      <div class="shell panel__in">
+        <div>
+          <h3 class="d3 panel__t r-up">Промышленные манипуляторы</h3>
+          <p class="panel__p r-up">Зрелая и самая массовая часть отрасли. Шесть осей, жёсткая кинематика,
+          детерминированные циклы и повторяемость, недостижимая для человека.</p>
+        </div>
+        <div class="facts r-up">
+          <dl class="facts__list">
+            <div><dt>Примеры</dt><dd>FANUC, KUKA, ABB, Yaskawa, Kawasaki</dd></div>
+            <div><dt>Точность</dt><dd>повторяемость порядка ±0,02–0,1 мм; нагрузка от единиц до сотен кг</dd></div>
+          </dl>
+          <details class="facts__more" open>
+            <summary>Подробнее</summary>
+            <dl class="facts__list">
+              <div><dt>Управление</dt><dd>вендорские контроллеры и языки (KRL, RAPID, TP), шины PROFINET / EtherNet&nbsp;IP</dd></div>
+              <div><dt>Безопасность</dt><dd>ISO 10218-1/-2; работа в огороженной ячейке с блокировками</dd></div>
+            </dl>
+          </details>
+        </div>
+      </div>
+    </article>
+
+    <!-- 4 cobots -->
+    <article class="panel">
+      <div class="panel__media" aria-hidden="true">
+        <img src="media/generated/cobot-human.webp" width="1280" height="720" alt="" loading="lazy" decoding="async">
+      </div>
+      <div class="panel__scrim" aria-hidden="true"></div>
+      <p class="shell tag panel__label r-fade">Cobots</p>
+      <div class="shell panel__in">
+        <div>
+          <h3 class="d3 panel__t r-up">Коллаборативные роботы</h3>
+          <p class="panel__p r-up">Коботы спроектированы так, чтобы работать рядом с человеком без
+          ограждения: ограничение силы и мощности, мягкие корпуса, остановка при контакте,
+          обучение «ведением за руку».</p>
+        </div>
+        <div class="facts r-up">
+          <dl class="facts__list">
+            <div><dt>Примеры</dt><dd>Universal Robots серии UR, FANUC CRX, Techman, Doosan</dd></div>
+            <div><dt>Нагрузка</dt><dd>обычно 3–30 кг, радиус 0,5–1,8 м</dd></div>
+          </dl>
+          <details class="facts__more" open>
+            <summary>Подробнее</summary>
+            <dl class="facts__list">
+              <div><dt>Норматив</dt><dd>ISO/TS 15066 — пределы силы и давления при контакте с человеком</dd></div>
+              <div><dt>Плюс</dt><dd>быстрое переразвёртывание под новую операцию, не нужен отдельный цех</dd></div>
+            </dl>
+          </details>
+        </div>
+      </div>
+    </article>
+
+    <!-- 5 home -->
+    <article class="panel">
+      <div class="panel__media" aria-hidden="true">
+        <img src="media/generated/home-robot.webp" width="1280" height="720" alt="" loading="lazy" decoding="async">
+      </div>
+      <div class="panel__scrim" aria-hidden="true"></div>
+      <p class="shell tag panel__label r-fade">Home &amp; service</p>
+      <div class="shell panel__in">
+        <div>
+          <h3 class="d3 panel__t r-up">Домашние и сервисные</h3>
+          <p class="panel__p r-up">Единственный класс, который уже стоит в миллионах квартир.
+          Технически это полноценная робототехника: LiDAR или визуальный SLAM, построение карты,
+          планирование покрытия, объезд препятствий.</p>
+        </div>
+        <div class="facts r-up">
+          <dl class="facts__list">
+            <div><dt>Примеры</dt><dd>роботы-пылесосы (iRobot, Roborock, Dreame), газонокосилки, сервисные подносчики в кафе</dd></div>
+            <div><dt>Новое</dt><dd>модели с выдвижным манипулятором — поднимают носки и провода, а не объезжают их</dd></div>
+          </dl>
+          <details class="facts__more" open>
+            <summary>Подробнее</summary>
+            <dl class="facts__list">
+              <div><dt>Гуманоиды дома</dt><dd>1X NEO, Figure — пока пилоты и ограниченные программы, не массовый продукт</dd></div>
+              <div><dt>Почему важно</dt><dd>дешёвая массовость даёт данные и отлаженную автономную навигацию</dd></div>
+            </dl>
+          </details>
+        </div>
+      </div>
+    </article>
+
+    <!-- 6 AMR — numeric panel -->
+    <article class="panel panel--data">
+      <p class="shell tag panel__label r-fade">AMR · Logistics</p>
+      <div class="shell panel__in">
+        <div>
+          <h3 class="d3 panel__t r-up">Мобильные роботы складов</h3>
+          <p class="panel__p r-up">Автономные мобильные платформы и роботизированные сортировщики —
+          самый окупаемый сегмент: повторяемый маршрут, предсказуемая среда, измеримая экономия.</p>
+        </div>
+        <p class="bignum r-up"><em>750</em>&nbsp;000<span class="bignum__p">+</span></p>
+        <div class="facts r-up">
+          <dl class="facts__list">
+            <div><dt>Масштаб</dt><dd>столько роботов Amazon сообщала на своих складах (2024)</dd></div>
+            <div><dt>Технологии</dt><dd>SLAM-навигация, динамическая маршрутизация, координация сотен единиц через WMS</dd></div>
+          </dl>
+          <details class="facts__more" open>
+            <summary>Подробнее</summary>
+            <dl class="facts__list">
+              <div><dt>Норматив</dt><dd>ISO 3691-4 — требования к безопасности промышленных AMR/AGV</dd></div>
+              <div><dt>Тренд</dt><dd>связка «AMR + манипулятор» для сборки заказов без человека</dd></div>
+            </dl>
+          </details>
+        </div>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+<!-- ======================= CONTROL LOOP (pinned, image-led) ======================= -->
+<section class="loop" id="how" aria-labelledby="howH">
+  <div class="shell loop__intro">
+    <p class="eyebrow">Контур управления</p>
+    <h2 class="d2 loop__t" id="howH" data-split>Чувствует. Думает. Действует.</h2>
+    <p class="lead loop__lead r-up">Любой робот работает по кругу: измерить, понять, исполнить,
+    снова измерить. Классы различаются тем, как быстро и как умно проходит каждый оборот.</p>
+  </div>
+
+  <div class="stage" id="stage">
+    <div class="stage__pin" id="stagePin">
+
+      <div class="stage__steps" id="stageSteps">
+
+        <article class="stage__step is-on" data-step="0">
+          <figure class="stage__frame stage__frame--sense">
+            <img src="media/generated/cobot-human.webp" width="1280" height="720" alt="" loading="lazy" decoding="async">
+            <div class="stage__scrim" aria-hidden="true"></div>
+          </figure>
+          <div class="shell stage__cap">
+            <span class="stage__num" aria-hidden="true">01</span>
+            <p class="stage__k mono">Sense · чувствует</p>
+            <h3 class="stage__h">Тело как измерительный прибор</h3>
+            <p class="stage__p">Без энкодеров в каждом шарнире робот не знает, где его собственная
+            рука. Проприоцепция здесь важнее зрения.</p>
+            <p class="stage__meta mono"><b>100–1000 Гц</b><span>IMU · энкодеры · момент</span><span>камеры 10–60 Гц</span></p>
+          </div>
+        </article>
+
+        <article class="stage__step" data-step="1">
+          <figure class="stage__frame">
+            <img src="media/generated/neural-vla.webp" width="1280" height="720" alt="" loading="lazy" decoding="async">
+            <div class="stage__scrim" aria-hidden="true"></div>
+          </figure>
+          <div class="shell stage__cap">
+            <span class="stage__num" aria-hidden="true">02</span>
+            <p class="stage__k mono">Think · думает</p>
+            <h3 class="stage__h">Самый медленный и самый умный слой</h3>
+            <p class="stage__p">Задача превращается в шаги, шаги — в траектории. Будущее
+            просчитывается на секунду-две вперёд; здесь же живёт обученная политика.</p>
+            <p class="stage__meta mono"><b>1–10 Гц</b><span>MPC · MoveIt 2 · footsteps</span><span>VLA 7–9 Гц</span></p>
+          </div>
+        </article>
+
+        <article class="stage__step" data-step="2">
+          <figure class="stage__frame">
+            <img src="media/generated/industrial-arm.webp" width="1280" height="720" alt="" loading="lazy" decoding="async">
+            <div class="stage__scrim" aria-hidden="true"></div>
+          </figure>
+          <div class="shell stage__cap">
+            <span class="stage__num" aria-hidden="true">03</span>
+            <p class="stage__k mono">Act · действует</p>
+            <h3 class="stage__h">Там, где опаздывать нельзя</h3>
+            <p class="stage__p">Устойчивость даёт не точная модель мира, а частота коррекции.
+            Бюджет одного шага контура момента — около миллисекунды.</p>
+            <p class="stage__meta mono"><b>1–10 кГц</b><span>whole-body · импеданс</span><span>BLDC · harmonic drive</span></p>
+          </div>
+        </article>
+
+      </div>
+
+      <canvas class="stage__neural" id="neural" aria-hidden="true"></canvas>
+      <div class="motif stage__motif" aria-hidden="true"></div>
+
+      <nav class="stage__rail" id="loopRail" aria-label="Фазы контура управления">
+        <button type="button" class="is-on" aria-current="true" data-go="0">
+          <span class="stage__rail-n mono" aria-hidden="true">01</span>
+          <span class="stage__rail-t" aria-hidden="true"><i></i></span>
+          <span class="stage__rail-l">Sense</span>
+        </button>
+        <button type="button" data-go="1">
+          <span class="stage__rail-n mono" aria-hidden="true">02</span>
+          <span class="stage__rail-t" aria-hidden="true"><i></i></span>
+          <span class="stage__rail-l">Think</span>
+        </button>
+        <button type="button" data-go="2">
+          <span class="stage__rail-n mono" aria-hidden="true">03</span>
+          <span class="stage__rail-t" aria-hidden="true"><i></i></span>
+          <span class="stage__rail-l">Act</span>
+        </button>
+      </nav>
+
+    </div>
+  </div>
+</section>
+
+<!-- ======================= LOOP DETAIL (editorial chain) ======================= -->
+<section class="sec chain" id="chain" aria-labelledby="chainH">
+  <div class="motif" aria-hidden="true"></div>
+  <div class="shell chain__in">
+    <div class="sec__head">
+      <p class="eyebrow">Звенья контура</p>
+      <h2 class="d2" id="chainH" data-split>Шесть звеньев одного круга</h2>
+      <p class="prose r-up">Ошибка восприятия становится ошибкой планирования, задержка
+      в управлении — падением. Поэтому у каждого звена своя частота и свой бюджет времени.</p>
+    </div>
+
+    <ol class="chain__list">
+      <li class="chain__item r-up">
+        <span class="chain__n" aria-hidden="true">01</span>
+        <div class="chain__b">
+          <h3 class="d4">Сенсоры</h3>
+          <p class="chain__s">Глаза и нервы: камеры, LiDAR, IMU, энкодеры в каждом шарнире.</p>
+          <details class="xmore" open><summary>Подробнее</summary>
+          <p>К ним добавляются датчики момента в приводах, а на кистях — тактильные матрицы,
+          которые ловят проскальзывание предмета раньше, чем его увидит камера.</p></details>
+          <p class="spec mono"><b>100–1000 Гц</b><span>IMU, энкодеры</span><span>камеры 10–60 Гц</span></p>
+        </div>
+      </li>
+
+      <li class="chain__item r-up">
+        <span class="chain__n" aria-hidden="true">02</span>
+        <div class="chain__b">
+          <h3 class="d4">Перцепция</h3>
+          <p class="chain__s">Из потока сырых данных собирается модель мира.</p>
+          <details class="xmore" open><summary>Подробнее</summary>
+          <p>Где робот — SLAM и визуальная одометрия. Что вокруг — сегментация и карта занятости.
+          Где нужный предмет и как он повёрнут — оценка 6D-позы.</p></details>
+          <p class="spec mono"><span>SLAM / VIO</span><span>сегментация</span><span>6D-поза</span></p>
+        </div>
+      </li>
+
+      <li class="chain__item r-up">
+        <span class="chain__n" aria-hidden="true">03</span>
+        <div class="chain__b">
+          <h3 class="d4">Планирование</h3>
+          <p class="chain__s">Планировщик обходит препятствия и держится в пределах шарниров.</p>
+          <details class="xmore" open><summary>Подробнее</summary>
+          <p>Для ног отдельно выбираются точки опоры и траектория центра масс, а MPC просчитывает
+          поведение на 0,5–2 секунды вперёд и пересобирает план каждый такт.</p></details>
+          <p class="spec mono"><span>MoveIt 2</span><span>MPC</span><span>footstep planning</span></p>
+        </div>
+      </li>
+
+      <li class="chain__item r-up">
+        <span class="chain__n" aria-hidden="true">04</span>
+        <div class="chain__b">
+          <h3 class="d4">Слой политики — VLA</h3>
+          <p class="chain__s">Обученная политика получает кадр и инструкцию и выдаёт действия.</p>
+          <details class="xmore" open><summary>Подробнее</summary>
+          <p>Она встаёт поверх классического планировщика, а не вместо него: снизу всегда остаётся
+          быстрый контроллер с жёсткими пределами скорости и усилия.</p></details>
+          <p class="spec mono"><b>7–9 Гц</b><span>рассуждение</span><span>подробнее ниже</span></p>
+        </div>
+      </li>
+
+      <li class="chain__item r-up">
+        <span class="chain__n" aria-hidden="true">05</span>
+        <div class="chain__b">
+          <h3 class="d4">Управление и приводы</h3>
+          <p class="chain__s">Контроллер тела распределяет усилия, приводы держат ток и момент.</p>
+          <details class="xmore" open><summary>Подробнее</summary>
+          <p>Импедансное управление задаёт мягкость при контакте. Дальше — мотор и редуктор:
+          планетарный, волновой или квази-прямой привод.</p></details>
+          <p class="spec mono"><b>1–10 кГц</b><span>whole-body control</span><span>BLDC · QDD</span></p>
+        </div>
+      </li>
+
+      <li class="chain__item r-up">
+        <span class="chain__n" aria-hidden="true">06</span>
+        <div class="chain__b">
+          <h3 class="d4">Обратная связь</h3>
+          <p class="chain__s">Движение меняет мир — сенсоры снимают новое измерение, круг замкнулся.</p>
+          <details class="xmore" open><summary>Подробнее</summary>
+          <p>Всё, что опоздало на один оборот, робот отрабатывает уже по устаревшей картине мира.
+          Поэтому бюджет задержки считают наравне с точностью.</p></details>
+          <p class="spec mono"><span>closed loop</span><span>латентность критична</span></p>
+        </div>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- ======================= CONNECT ======================= -->
+<section class="sec connect" id="connect" aria-labelledby="connectH">
+  <div class="motif" aria-hidden="true"></div>
+  <div class="shell connect__in">
+    <div class="sec__head">
+      <h2 class="d2" id="connectH" data-split>Реальное время — на борту, умное — снаружи</h2>
+      <p class="prose r-up">Бортовой компьютер отвечает за жёсткий тайминг, внешний слой —
+      за задачи, сценарии и агентов. Чем выше уровень, тем медленнее и умнее команды.</p>
+    </div>
+
+    <div class="layers">
+
+      <article class="layer r-up">
+        <div class="layer__k">
+          <span class="layer__n" aria-hidden="true">01</span>
+          <p class="layer__tag mono">Общий язык</p>
+        </div>
+        <div class="layer__b">
+          <h3 class="d3 layer__t">ROS 2</h3>
+          <p class="layer__p">Де-факто стандарт для исследований и всё чаще для продакшена. Узлы
+          обмениваются сообщениями через топики, сервисы и действия; транспорт — DDS, с поддержкой
+          реального времени и мультимашинных систем.</p>
+          <ul class="ticks">
+            <li><b>ros2_control</b> — единый интерфейс к приводам и контроллерам</li>
+            <li><b>MoveIt 2</b> — планирование движений для манипуляторов</li>
+            <li><b>Nav2</b> — навигация мобильных платформ</li>
+            <li><b>micro-ROS</b> — те же сообщения на микроконтроллерах</li>
+            <li><b>LTS-релизы</b> (Humble, Jazzy) живут годами — на них и стоит строить</li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="layer r-up">
+        <div class="layer__k">
+          <span class="layer__n" aria-hidden="true">02</span>
+          <p class="layer__tag mono">Вендорский слой</p>
+        </div>
+        <div class="layer__b">
+          <h3 class="d3 layer__t">SDK производителя</h3>
+          <p class="layer__p">Почти у каждой серьёзной платформы есть собственный SDK — часто он даёт
+          больше, чем обёртка под ROS, особенно в части безопасности и диагностики.</p>
+          <ul class="ticks">
+            <li><b>Boston Dynamics</b> Spot SDK — Python-клиент поверх gRPC</li>
+            <li><b>Unitree</b> SDK — высоко- и низкоуровневые команды по DDS/UDP</li>
+            <li><b>Franka</b> — libfranka и интерфейс управления с контуром 1 кГц</li>
+            <li><b>Universal Robots</b> — RTDE для телеметрии, URScript для программ</li>
+            <li><b>Промышленные контроллеры</b> — PROFINET, EtherNet/IP, OPC UA</li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="layer r-up">
+        <div class="layer__k">
+          <span class="layer__n" aria-hidden="true">03</span>
+          <p class="layer__tag mono">Физика связи</p>
+        </div>
+        <div class="layer__b">
+          <h3 class="d3 layer__t">Каналы</h3>
+          <p class="layer__p">Главное правило: контур реального времени не живёт в Wi-Fi. Критичное —
+          на борту и по проводу, по радио — только задачи, телеметрия и видео.</p>
+          <ul class="ticks">
+            <li><b>Внутри робота</b> — EtherCAT, CAN-FD, промышленный Ethernet</li>
+            <li><b>Внешне</b> — Wi-Fi 6/6E для команд и телеметрии</li>
+            <li><b>Bluetooth LE</b> — настройка, пульты, сервисный доступ</li>
+            <li><b>5G / private LTE</b> — большие площадки и улица</li>
+            <li><b>Везде</b> — TLS, аутентификация и отдельная сеть для роботов</li>
+          </ul>
+        </div>
+      </article>
+
+    </div>
+
+    <div class="rig">
+      <div class="code glass glass--2 r-up">
+        <div class="code__bar"><i aria-hidden="true"></i>ros2 · rclpy · минимальный узел управления</div>
+<pre><code><span class="c"># 1. Подписываемся на телеметрию, 2. отправляем скорость в контроллер базы</span>
+<span class="k">import</span> rclpy
+<span class="k">from</span> rclpy.node <span class="k">import</span> Node
+<span class="k">from</span> geometry_msgs.msg <span class="k">import</span> Twist
+<span class="k">from</span> sensor_msgs.msg <span class="k">import</span> JointState
+
+<span class="k">class</span> <span class="f">RobotBridge</span>(Node):
+    <span class="k">def</span> <span class="f">__init__</span>(self):
+        <span class="f">super</span>().<span class="f">__init__</span>(<span class="s">'robot_bridge'</span>)
+        self.cmd = self.<span class="f">create_publisher</span>(Twist, <span class="s">'/cmd_vel'</span>, <span class="n">10</span>)
+        self.<span class="f">create_subscription</span>(JointState, <span class="s">'/joint_states'</span>, self.on_state, <span class="n">10</span>)
+        self.<span class="f">create_timer</span>(<span class="n">0.05</span>, self.tick)   <span class="c"># 20 Гц — высокий уровень</span>
+        self.safe = <span class="k">False</span>
+
+    <span class="k">def</span> <span class="f">on_state</span>(self, msg):
+        <span class="c"># проприоцепция: проверяем, что все шарниры в допуске</span>
+        self.safe = <span class="f">all</span>(<span class="f">abs</span>(v) &lt; <span class="n">6.0</span> <span class="k">for</span> v <span class="k">in</span> msg.velocity)
+
+    <span class="k">def</span> <span class="f">tick</span>(self):
+        t = <span class="f">Twist</span>()
+        <span class="k">if</span> self.safe:
+            t.linear.x = <span class="n">0.25</span>        <span class="c"># м/с, ограничено политикой безопасности</span>
+            t.angular.z = <span class="n">0.0</span>
+        self.cmd.<span class="f">publish</span>(t)          <span class="c"># нет данных → нулевая скорость</span>
+
+rclpy.<span class="f">init</span>(); rclpy.<span class="f">spin</span>(<span class="f">RobotBridge</span>())</code></pre>
+      </div>
+
+      <aside class="aside r-up">
+        <p class="eyebrow">Агентный слой</p>
+        <h3 class="d3 aside__t">Языковая модель не дёргает моторы</h3>
+        <p class="aside__p">Рабочая архитектура трёхслойная: агент формулирует план, слой скиллов
+        превращает его в проверенные вызовы, контроллер исполняет — и в любой момент может отказать.</p>
+        <ul class="ticks">
+          <li><b>Скиллы как инструменты</b> — «иди в точку», «возьми объект», «сними показание»;
+          через MCP они становятся обычными tools для агента</li>
+          <li><b>Валидация</b> — каждый вызов проверяется на допустимость до исполнения</li>
+          <li><b>Геозоны и лимиты</b> — скорость, усилие, рабочая область зашиты ниже агента</li>
+          <li><b>Аппаратный e-stop</b> — физическая кнопка вне программного стека</li>
+          <li><b>Подтверждение</b> — необратимые действия только с согласия оператора</li>
+        </ul>
+      </aside>
+    </div>
+  </div>
+
+  <div class="band band--safety">
+    <div class="shell band__in">
+      <div class="band__copy">
+        <p class="eyebrow">Безопасность</p>
+        <h3 class="d2 band__t" data-split>Безопасность — часть интеграции, а не этап после</h3>
+        <p class="band__p r-up">Промышленные установки проектируются по ISO 10218-1/-2, коботы — с учётом
+        ISO/TS 15066, сервисные роботы — ISO 13482, складские AMR — ISO 3691-4. До первого запуска:
+        оценка рисков, аварийный останов и свободная зона.</p>
+        <p class="spec mono r-up"><b>до первого запуска</b><span>оценка рисков</span><span>e-stop</span><span>свободная зона</span><span>малая скорость</span></p>
+      </div>
+
+      <div class="band__viz r-fade" aria-hidden="true">
+        <svg viewBox="0 0 320 320" role="presentation" focusable="false">
+          <defs>
+            <linearGradient id="sg" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#00F5FF"/><stop offset="1" stop-color="#4B3BFF"/>
+            </linearGradient>
+            <radialGradient id="sc"><stop offset="0" stop-color="#00F5FF" stop-opacity=".5"/><stop offset="1" stop-color="#00F5FF" stop-opacity="0"/></radialGradient>
+          </defs>
+          <circle cx="160" cy="160" r="150" fill="url(#sc)" opacity=".28"/>
+          <rect class="vz vz--1" x="12" y="12" width="296" height="296" rx="26"/>
+          <rect class="vz vz--2" x="54" y="54" width="212" height="212" rx="20"/>
+          <circle class="vz vz--3" cx="160" cy="160" r="66"/>
+          <path class="vz vz--arc" d="M160 52a108 108 0 0 1 108 108"/>
+          <path class="vz vz--arc2" d="M52 160a108 108 0 0 0 108 108"/>
+          <g class="vz-ticks">
+            <path d="M160 12v18M160 290v18M12 160h18M290 160h18"/>
+          </g>
+          <circle class="vz-core" cx="160" cy="160" r="13" fill="url(#sg)"/>
+          <circle class="vz-ring" cx="160" cy="160" r="26"/>
+          <text class="vz-l" x="160" y="36">ОГРАЖДЕНИЕ</text>
+          <text class="vz-l" x="160" y="78">МАЛАЯ СКОРОСТЬ</text>
+          <text class="vz-l vz-l--c" x="160" y="214">E-STOP</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= MODELS ======================= -->
+<section class="models sec" id="models" aria-labelledby="modelsH">
+  <div class="models__bg" aria-hidden="true">
+    <img id="modelsImg" src="media/generated/neural-vla.webp" width="1280" height="720" alt="" loading="lazy" decoding="async">
+  </div>
+
+  <div class="shell models__in">
+    <div class="sec__head">
+      <p class="eyebrow">Модели</p>
+      <h2 class="d2" id="modelsH" data-split>Модели, которые выдают не текст, а действия</h2>
+      <p class="prose r-up">VLA (vision-language-action) получает кадры и инструкцию на обычном
+      языке и выдаёт целевые положения и скорости. Действия кодируются как токены, поэтому
+      модель учится на смеси веб-данных и записей реальных роботов.</p>
+    </div>
+
+    <div class="mlist">
+      <article class="mrow r-up">
+        <div class="mrow__h">
+          <h3 class="mrow__n">RT-2</h3>
+          <span class="mrow__o mono">Google DeepMind · 2023</span>
+        </div>
+        <div class="mrow__b">
+          <p class="mrow__l">Первая известная VLA: действия закодированы как текстовые токены поверх vision-language модели.</p>
+          <p class="spec mono"><b>Пионер VLA</b><span>VLM + action tokens</span><span>манипуляция</span></p>
+          <details class="xmore"><summary>Подробнее</summary>
+          <p>Показала перенос «веб-знаний» в манипуляцию: робот выполнял инструкции с понятиями,
+          которых не было в роботных данных.</p></details>
+        </div>
+      </article>
+
+      <article class="mrow r-up">
+        <div class="mrow__h">
+          <h3 class="mrow__n">OpenVLA</h3>
+          <span class="mrow__o mono">Stanford · UC Berkeley · Google · TRI · 2024</span>
+        </div>
+        <div class="mrow__b">
+          <p class="mrow__l">Семь миллиардов параметров с открытыми весами — рабочая база, чтобы дообучить под свою задачу.</p>
+          <p class="spec mono"><b>7B · открытые веса</b><span>Open X-Embodiment</span><span>fine-tune</span></p>
+          <details class="xmore"><summary>Подробнее</summary>
+          <p>Обучена примерно на 970 тыс. эпизодов реальных роботов из Open X-Embodiment.
+          Дообучается LoRA-методами на одной-двух GPU.</p></details>
+        </div>
+      </article>
+
+      <article class="mrow r-up">
+        <div class="mrow__h">
+          <h3 class="mrow__n">π0 и π0.5</h3>
+          <span class="mrow__o mono">Physical Intelligence · 2024–2025</span>
+        </div>
+        <div class="mrow__b">
+          <p class="mrow__l">Выдаёт не одну команду, а чанк траектории — отсюда плавность вместо рывков.</p>
+          <p class="spec mono"><b>Flow matching</b><span>до 50 Гц</span><span>openpi</span></p>
+          <details class="xmore"><summary>Подробнее</summary>
+          <p>Над VLM надстроен «эксперт действий». Обучение кросс-роботное; π0.5 сделана ради
+          обобщения на незнакомые помещения. Веса π0 опубликованы.</p></details>
+        </div>
+      </article>
+
+      <article class="mrow r-up">
+        <div class="mrow__h">
+          <h3 class="mrow__n">Isaac GR00T N1</h3>
+          <span class="mrow__o mono">NVIDIA · 2025</span>
+        </div>
+        <div class="mrow__b">
+          <p class="mrow__l">Открытая база для гуманоидов: медленное рассуждение плюс быстрый генератор движений.</p>
+          <p class="spec mono"><b>Dual-system</b><span>humanoid</span><span>Isaac Lab</span></p>
+          <details class="xmore"><summary>Подробнее</summary>
+          <p>Медленный модуль — VLM, быстрый — диффузионный. Идёт в связке с Isaac Sim и генерацией
+          синтетических данных для sim-to-real.</p></details>
+        </div>
+      </article>
+
+      <article class="mrow r-up">
+        <div class="mrow__h">
+          <h3 class="mrow__n">Gemini Robotics</h3>
+          <span class="mrow__o mono">Google DeepMind · 2025</span>
+        </div>
+        <div class="mrow__b">
+          <p class="mrow__l">Семейство на базе Gemini: версия для действий и версия с пространственным рассуждением.</p>
+          <p class="spec mono"><b>VLA + ER</b><span>embodied reasoning</span><span>on-device</span></p>
+          <details class="xmore"><summary>Подробнее</summary>
+          <p>Версия ER оценивает позы, точки захвата и порядок шагов. Выходили обновления поколения
+          1.5 и вариант для запуска на устройстве, без облака.</p></details>
+        </div>
+      </article>
+
+      <article class="mrow r-up">
+        <div class="mrow__h">
+          <h3 class="mrow__n">Helix</h3>
+          <span class="mrow__o mono">Figure AI · 2025</span>
+        </div>
+        <div class="mrow__b">
+          <p class="mrow__l">Думает на 7–9 Гц, двигается на 200 Гц — два модуля, один набор весов.</p>
+          <p class="spec mono"><b>System 1 / 2</b><span>7B + 80M</span><span>bimanual</span></p>
+          <details class="xmore"><summary>Подробнее</summary>
+          <p>VLM на ~7 млрд параметров передаёт латентный план визуомоторной политике на ~80 млн
+          параметров. Работает с незнакомыми предметами без дообучения.</p></details>
+        </div>
+      </article>
+    </div>
+
+    <div class="duo">
+      <article class="duo__col r-up">
+        <p class="eyebrow">Соседи по стеку</p>
+        <h3 class="d3 duo__t">Что ещё в стеке, кроме VLA</h3>
+        <p>VLA отвечает за связку «увидел и понял → сделал», но одна она роботом не управляет.</p>
+        <ul class="ticks">
+          <li><b>LLM</b> — разбор задачи на шаги, диалог с оператором, вызов скиллов</li>
+          <li><b>Vision-модели</b> — детекция и сегментация по текстовому описанию, оценка поз и точек захвата</li>
+          <li><b>Речь</b> — распознавание и синтез для голосового интерфейса</li>
+          <li><b>Классика никуда не ушла</b> — кинематика, SLAM, фильтры состояния, MPC остаются основой надёжности</li>
+          <li><b>Симуляция</b> — MuJoCo, Isaac Lab и генерация синтетики для обучения до выхода в реальность</li>
+        </ul>
+      </article>
+
+      <article class="duo__col r-up">
+        <p class="eyebrow">Ограничения</p>
+        <h3 class="d3 duo__t">Где у этих моделей предел</h3>
+        <p>Полезно знать ограничения до того, как закладывать VLA в проект.</p>
+        <ul class="ticks">
+          <li><b>Данные</b> — записей реальных роботов на порядки меньше, чем текста и картинок в интернете</li>
+          <li><b>Частота</b> — крупная модель физически не успевает в контур 1 кГц, поэтому её всегда прикрывает быстрый контроллер</li>
+          <li><b>Перенос между телами</b> — модель, обученная на одном роботе, не переносится на другой «как есть»</li>
+          <li><b>Долгие задачи</b> — многошаговые сценарии до сих пор рассыпаются на ошибках в середине</li>
+          <li><b>Оценка</b> — нет общепринятого бенчмарка: цифры из демо редко повторяются в чужих условиях</li>
+        </ul>
+      </article>
+    </div>
+
+    <p class="prose r-up" style="margin-top:var(--s5);font-size:var(--small)">Версии, частоты
+    и размеры моделей обновляются почти каждый квартал. Характеристики взяты из публикаций
+    разработчиков; перед проектным решением сверяйтесь с блогами вендоров и статьями на arXiv.</p>
+  </div>
+</section>
+
+<!-- ======================= START ======================= -->
+<section class="sec" id="start" aria-labelledby="startH">
+  <div class="shell">
+    <div class="sec__head">
+      <p class="eyebrow">Маршрут</p>
+      <h2 class="d2" id="startH" data-split>Маршрут от нуля до своего робота</h2>
+      <p class="prose r-up">Порядок важен: ошибка, пойманная шагом раньше, обходится
+      на порядок дешевле.</p>
+    </div>
+
+    <div class="ladder" id="ladder">
+      <div class="ladder__fill" id="ladderFill" aria-hidden="true"></div>
+
+      <article class="rung r-up">
+        <span class="rung__n mono" aria-hidden="true">01</span>
+        <h3 class="d4">Симулятор прежде железа</h3>
+        <p>Сломанный в симуляторе робот не стоит ничего. MuJoCo — быстрый физический движок
+        с готовыми моделями реальных платформ; Isaac Sim / Isaac Lab — фотореализм и обучение
+        политик; Gazebo — привычная связка с ROS 2.</p>
+        <div class="chips"><span class="chip">MuJoCo</span><span class="chip">Isaac Lab</span><span class="chip">Gazebo</span></div>
+      </article>
+
+      <article class="rung r-up">
+        <span class="rung__n mono" aria-hidden="true">02</span>
+        <h3 class="d4">Базовый ROS 2</h3>
+        <p>Пройти официальные туториалы: узлы, топики, сервисы, система координат tf2, запуск через
+        launch-файлы. Дальше — MoveIt 2, если у вас рука, или Nav2, если платформа. Python (rclpy)
+        хватит для старта, C++ понадобится там, где важны миллисекунды.</p>
+        <div class="chips"><span class="chip">rclpy</span><span class="chip">tf2</span><span class="chip">MoveIt 2 · Nav2</span></div>
+      </article>
+
+      <article class="rung r-up">
+        <span class="rung__n mono" aria-hidden="true">03</span>
+        <h3 class="d4">Недорогое железо</h3>
+        <p>Открытые настольные руки серии SO-100 / SO-101 вместе с библиотекой LeRobot от Hugging Face
+        позволяют собрать стенд за стоимость деталей, записать демонстрации телеоперацией и обучить
+        политику. В качестве бортового компьютера обычно берут модуль Jetson.</p>
+        <div class="chips"><span class="chip">LeRobot</span><span class="chip">SO-101</span><span class="chip">Jetson</span></div>
+      </article>
+
+      <article class="rung r-up">
+        <span class="rung__n mono" aria-hidden="true">04</span>
+        <h3 class="d4">Дообучение, а не обучение с нуля</h3>
+        <p>Рабочий путь для одиночки и небольшой команды: взять открытую VLA (OpenVLA, π0, GR00T N1)
+        и дообучить её на своих демонстрациях конкретной задачи. Десятки-сотни качественных
+        эпизодов дают больше, чем тысячи неряшливых.</p>
+        <div class="chips"><span class="chip">fine-tune</span><span class="chip">телеоперация</span><span class="chip">LoRA</span></div>
+      </article>
+
+      <article class="rung r-up">
+        <span class="rung__n mono" aria-hidden="true">05</span>
+        <h3 class="d4">Безопасность с первого включения</h3>
+        <p>Кнопка аварийного останова в руке, программные лимиты скорости и усилия, пустая огороженная
+        зона, первый прогон траектории на малой скорости и без груза. Людей в рабочей области нет.</p>
+        <div class="chips"><span class="chip chip--cy">e-stop</span><span class="chip">лимиты</span><span class="chip">оценка рисков</span></div>
+      </article>
+
+      <article class="rung r-up">
+        <span class="rung__n mono" aria-hidden="true">06</span>
+        <h3 class="d4">Теория, которая действительно нужна</h3>
+        <p>Минимум: линейная алгебра и преобразования координат, кинематика и динамика, основы теории
+        управления, вероятностная оценка состояния. Хорошие бесплатные источники — курс
+        «Modern Robotics» и материалы по управлению недоактуированными системами
+        (Underactuated Robotics).</p>
+        <div class="chips"><span class="chip">кинематика</span><span class="chip">control theory</span><span class="chip">оценка состояния</span></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= INTERLUDE ======================= -->
+<section class="band band--quote" aria-label="Ключевая мысль">
+  <div class="motif" aria-hidden="true"></div>
+  <div class="shell band__in">
+    <p class="eyebrow">Если коротко</p>
+    <p class="band__q d2" data-split>Робота делает роботом не корпус, а частота, с которой он
+    успевает исправить собственную ошибку.</p>
+    <p class="band__p r-up">Классы, фреймворки и модели нужны, чтобы удержать эту частоту,
+    когда задача усложняется.</p>
+  </div>
+</section>
+
+<!-- ======================= FAQ ======================= -->
+<section class="sec" id="faq" aria-labelledby="faqH">
+  <div class="shell shell--narrow">
+    <div class="sec__head">
+      <p class="eyebrow">FAQ</p>
+      <h2 class="d2" id="faqH" data-split>Частые вопросы</h2>
+      <p class="prose r-up">В том числе там, где отрасли пока нечем похвастаться.</p>
+    </div>
+
+    <div class="faq" id="faq-list">
+
+      <div class="qa r-up">
+        <h3><button type="button" class="qa__q" aria-expanded="false">
+          <span>Чем современный робот отличается от промышленного робота 2010-х?</span>
+          <span class="qa__i" aria-hidden="true"></span>
+        </button></h3>
+        <div class="qa__a"><div><p>Железо изменилось умеренно — изменился способ задавать поведение.
+        Классический манипулятор исполняет заранее записанную программу в жёстко фиксированной обстановке:
+        сдвиньте деталь на пару сантиметров, и цикл сломается. Современный робот получает модель мира
+        с сенсоров и политику, обученную на данных, поэтому допускает вариативность: другой предмет,
+        другое положение, другая формулировка задачи. Цена этого — вероятностное поведение вместо
+        детерминированного, и именно поэтому поверх нейросети всегда стоит классический контроллер
+        с жёсткими ограничениями.</p></div></div>
+      </div>
+
+      <div class="qa r-up">
+        <h3><button type="button" class="qa__q" aria-expanded="false">
+          <span>Гуманоиды уже реально работают или это красивые демо?</span>
+          <span class="qa__i" aria-hidden="true"></span>
+        </button></h3>
+        <div class="qa__a"><div><p>И то, и другое. Пилотные внедрения на производстве и в логистике
+        действительно идут, и на узких повторяющихся операциях гуманоиды показывают работоспособность.
+        Но массовой универсальности нет: промышленной надёжности манипулятора они пока не достигают,
+        часть эффектных роликов снята с телеоперацией или в подготовленной обстановке, а стоимость
+        владения высока. Трезвая оценка на 2026 год: технология вышла из лаборатории в пилоты,
+        но не в серийную эксплуатацию «на любой задаче».</p></div></div>
+      </div>
+
+      <div class="qa r-up">
+        <h3><button type="button" class="qa__q" aria-expanded="false">
+          <span>Нужен ли ROS 2, если у платформы есть собственный SDK?</span>
+          <span class="qa__i" aria-hidden="true"></span>
+        </button></h3>
+        <div class="qa__a"><div><p>Если задача одна, робот один и он от одного вендора — хватит SDK,
+        это короче и ближе к гарантиям производителя. ROS 2 начинает выигрывать, когда появляется
+        второй источник данных или вторая платформа: единые типы сообщений, запись и воспроизведение
+        всего потока данных, готовые планировщики, визуализация, симуляция. На практике часто живут
+        оба слоя: SDK внизу как драйвер, ROS 2 выше как система интеграции.</p></div></div>
+      </div>
+
+      <div class="qa r-up">
+        <h3><button type="button" class="qa__q" aria-expanded="false">
+          <span>Можно ли управлять роботом через LLM-агента?</span>
+          <span class="qa__i" aria-hidden="true"></span>
+        </button></h3>
+        <div class="qa__a"><div><p>Да — но только на уровне планирования, не на уровне моторов.
+        Рабочая схема: агент получает задачу на естественном языке, выбирает последовательность заранее
+        проверенных скиллов («подойти к точке», «взять объект», «снять показание») и вызывает их как
+        инструменты — например, через MCP. Каждый вызов проходит валидацию, ограничения по скорости
+        и усилию заданы ниже агента и не переопределяются, необратимые действия требуют подтверждения
+        оператора, а аппаратный аварийный останов лежит вне программного стека. Отдавать модели прямое
+        управление приводами нельзя: латентность и недетерминированность делают это небезопасным.</p></div></div>
+      </div>
+
+      <div class="qa r-up">
+        <h3><button type="button" class="qa__q" aria-expanded="false">
+          <span>Сколько стоит начать практиковаться?</span>
+          <span class="qa__i" aria-hidden="true"></span>
+        </button></h3>
+        <div class="qa__a"><div><p>Ноль — симуляторы MuJoCo, Gazebo и Isaac Sim бесплатны для обучения,
+        и первые месяцы честно проходят в них. Дальше по порядку величины: настольная открытая рука
+        серии SO-101 — сотни долларов за детали; потребительский квадропед вроде Unitree Go2 —
+        от примерно $1 600; человекоподобный Unitree G1 анонсировался от $16 000; промышленная ячейка
+        с манипулятором, оснасткой, ограждением и интеграцией — десятки тысяч долларов, где само железо
+        часто меньше половины сметы. Цены ориентировочные и меняются — проверяйте у поставщика.</p></div></div>
+      </div>
+
+      <div class="qa r-up">
+        <h3><button type="button" class="qa__q" aria-expanded="false">
+          <span>Почему роботы до сих пор падают и ломают предметы?</span>
+          <span class="qa__i" aria-hidden="true"></span>
+        </button></h3>
+        <div class="qa__a"><div><p>Из-за контакта и неопределённости. Пока робот движется в воздухе,
+        задача почти решена; как только возникает касание, силы меняются скачком, трение и жёсткость
+        поверхности заранее неизвестны, а ошибка оценки положения в несколько миллиметров превращается
+        в промах или удар. Добавьте задержку восприятия: кадр обработан через десятки миллисекунд,
+        и мир за это время уже изменился. Отсюда ставка на высокую частоту контура, силовое
+        и импедансное управление и обучение на реальных данных вместо идеальной модели.</p></div></div>
+      </div>
+
+      <div class="qa r-up">
+        <h3><button type="button" class="qa__q" aria-expanded="false">
+          <span>Заменят ли роботы людей на производстве?</span>
+          <span class="qa__i" aria-hidden="true"></span>
+        </button></h3>
+        <div class="qa__a"><div><p>Статистика пока описывает не замену, а дополнение: средняя плотность
+        роботизации в мире — порядка 162 роботов на 10 000 занятых в промышленности (IFR, данные
+        за 2023 год), и наиболее автоматизированные страны одновременно сохраняют высокую занятость
+        в производстве. Роботы забирают операции, а не профессии: монотонные, вредные, точные
+        до десятых миллиметра. Параллельно растёт спрос на тех, кто их внедряет и обслуживает —
+        интеграторов, операторов, инженеров по безопасности. Более честная формулировка на сегодня:
+        меняется структура работы, а не её количество.</p></div></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ======================= CTA ======================= -->
+<section class="cta">
+  <canvas class="cta__neural" id="neuralCta" aria-hidden="true"></canvas>
+  <div class="cta__orb cta__orb--a" aria-hidden="true"></div>
+  <div class="cta__orb cta__orb--b" aria-hidden="true"></div>
+  <div class="motif cta__motif" aria-hidden="true"></div>
+
+  <div class="shell cta__in">
+    <h2 class="d2" data-split>Подключите первого робота на этой неделе</h2>
+    <p class="lead r-up" style="max-width:48ch">Поставьте симулятор, пройдите туториалы ROS 2,
+    запустите готовую политику на модели платформы. Железо покупайте после этого.</p>
+    <div class="btn-row r-up" style="margin-top:var(--s5)">
+      <a class="btn btn--main" href="#start" data-magnetic>
+        <span class="btn__t">Открыть маршрут</span>
+        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h10M8.5 3.5 13 8l-4.5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+      <a class="btn btn--ghost" href="https://docs.ros.org/" target="_blank" rel="noopener" data-magnetic>
+        <span class="btn__t">Документация ROS 2</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ======================= FOOTER ======================= -->
+<footer class="foot">
+  <div class="motif foot__motif" aria-hidden="true"></div>
+  <div class="shell foot__inner">
+    <div class="foot__grid">
+      <div class="foot__col foot__col--about">
+        <a class="brand" href="#top">
+          <span class="brand__m" aria-hidden="true">M</span>
+          <span>MIND<small>Robotics</small></span>
+        </a>
+        <p>Образовательный лонгрид о современной робототехнике: от контура управления
+        до vision-language-action моделей. Собран по открытым публикациям разработчиков
+        и отраслевой статистике.</p>
+      </div>
+
+      <nav class="foot__col" aria-label="Разделы в подвале">
+        <h4>Разделы</h4>
+        <ul>
+          <li><a href="#classes">Классы машин</a></li>
+          <li><a href="#how">Контур управления</a></li>
+          <li><a href="#connect">Подключение</a></li>
+          <li><a href="#models">AI-модели</a></li>
+          <li><a href="#start">С чего начать</a></li>
+          <li><a href="#faq">FAQ</a></li>
+        </ul>
+      </nav>
+
+      <nav class="foot__col" aria-label="Инструменты">
+        <h4>Инструменты</h4>
+        <ul>
+          <li><a href="https://docs.ros.org/" target="_blank" rel="noopener">ROS 2 Documentation</a></li>
+          <li><a href="https://moveit.ai/" target="_blank" rel="noopener">MoveIt 2</a></li>
+          <li><a href="https://mujoco.org/" target="_blank" rel="noopener">MuJoCo</a></li>
+          <li><a href="https://developer.nvidia.com/isaac" target="_blank" rel="noopener">NVIDIA Isaac</a></li>
+          <li><a href="https://github.com/huggingface/lerobot" target="_blank" rel="noopener">LeRobot</a></li>
+          <li><a href="https://openvla.github.io/" target="_blank" rel="noopener">OpenVLA</a></li>
+        </ul>
+      </nav>
+
+      <div class="foot__col">
+        <h4>Стандарты</h4>
+        <ul>
+          <li>ISO 10218-1/-2 — промышленные роботы</li>
+          <li>ISO/TS 15066 — коллаборативные</li>
+          <li>ISO 13482 — сервисные и персональные</li>
+          <li>ISO 3691-4 — складские AMR</li>
+          <li>IEC 61508 — функциональная безопасность</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="foot__end">
+      <span>Информационный материал · факты по публикациям разработчиков, arXiv и IFR World Robotics · 2026</span>
+      <span>MIND · MOTION DESIGN BUILD</span>
+    </div>
+  </div>
+</footer>
+
+<script src="vendor/gsap.min.js" defer></script>
+<script src="vendor/ScrollTrigger.min.js" defer></script>
+<script src="vendor/lenis.min.js" defer></script>
+<script src="js/neural.js" defer></script>
+<script src="js/main.js" defer></script>
 </body>
 </html>
