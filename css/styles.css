@@ -1,0 +1,404 @@
+@font-face {
+  font-family: Geist;
+  src: url("../fonts/geist-cyrillic-400-normal.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: Geist;
+  src: url("../fonts/geist-cyrillic-500-normal.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: Geist;
+  src: url("../fonts/geist-latin-400-normal.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: Geist;
+  src: url("../fonts/geist-latin-500-normal.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Geist Mono";
+  src: url("../fonts/geist-mono-cyrillic-400-normal.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: "Geist Mono";
+  src: url("../fonts/geist-mono-cyrillic-500-normal.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: "Geist Mono";
+  src: url("../fonts/geist-mono-latin-400-normal.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Geist Mono";
+  src: url("../fonts/geist-mono-latin-500-normal.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+  --bg: #09090f;
+  --ink: #f3f1ea;
+  --muted: #a7a3b2;
+  --line: rgba(236, 234, 228, 0.42);
+  --cyan: #00f5ff;
+  --violet: #7b2ff7;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--ink); }
+html { scroll-behavior: auto; }
+body {
+  font-family: Geist, "Segoe UI", sans-serif;
+  font-weight: 400;
+  min-height: 100%;
+}
+button, a { font: inherit; color: inherit; }
+.skip {
+  position: absolute;
+  left: 12px;
+  top: -40px;
+  z-index: 9;
+}
+.skip:focus { top: 12px; }
+
+#stage {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  z-index: 0;
+  touch-action: none;
+  background: var(--bg);
+}
+#vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at center, transparent 52%, rgba(0, 0, 0, 0.5) 100%);
+}
+#grain {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.18;
+  background-image: url("../assets/grain.png");
+  background-size: 180px;
+  mix-blend-mode: overlay;
+}
+#frame {
+  position: fixed;
+  inset: 14px;
+  z-index: 2;
+  pointer-events: none;
+  border: 1px solid rgba(236, 234, 228, 0.14);
+}
+#frame:before, #frame:after {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-color: rgba(236, 234, 228, 0.7);
+  border-style: solid;
+}
+#frame:before { top: -1px; left: -1px; border-width: 1px 0 0 1px; }
+#frame:after { right: -1px; bottom: -1px; border-width: 0 1px 1px 0; }
+
+#hud {
+  position: fixed;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+#hud a, #hud button, #hud .tabs { pointer-events: auto; }
+
+.top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 22px 28px 0;
+}
+.mark {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  text-decoration: none;
+  font-family: "Geist Mono", ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+.word {
+  font-family: "Geist Mono", ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.index {
+  margin: 0 0 0 auto;
+  font-family: "Geist Mono", ui-monospace, monospace;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+}
+.index span { color: rgba(243, 241, 234, 0.4); }
+
+.tabs {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px 28px 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar { display: none; }
+.tabs button {
+  flex: 0 0 auto;
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(236, 234, 228, 0.22);
+  background: transparent;
+  color: #d5d2dc;
+  font-family: "Geist Mono", ui-monospace, monospace;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.tabs button[aria-pressed="true"] {
+  color: #061316;
+  background: #bffcff;
+  border-color: #bffcff;
+}
+.tabs button:focus-visible { outline: 1px solid var(--cyan); outline-offset: 3px; }
+
+#leaders {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+#leaders polyline {
+  fill: none;
+  stroke: rgba(232, 236, 238, 0.82);
+  stroke-width: 1;
+}
+#leaders circle { fill: #f4f1ea; }
+
+.call {
+  position: absolute;
+  width: min(210px, 22vw);
+  margin: 0;
+  padding-top: 8px;
+  border-top: 1px solid rgba(236, 234, 228, 0.5);
+  pointer-events: none;
+}
+.call .idx {
+  margin: 0 0 6px;
+  font-family: "Geist Mono", ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.call .fig {
+  margin: 0;
+  font-family: "Geist Mono", ui-monospace, monospace;
+  font-weight: 500;
+  font-size: 28px;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+.call .fig span {
+  margin-left: 6px;
+  font-size: 0.42em;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+.call .note {
+  margin: 8px 0 0;
+  max-width: 24em;
+  color: #c9c4d2;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.headline {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+.kicker {
+  margin: 0 0 8px;
+  font-family: "Geist Mono", ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.headline h1 {
+  margin: 0;
+  font-weight: 500;
+  font-size: clamp(40px, 4.6vw, 68px);
+  letter-spacing: -0.045em;
+  line-height: 0.96;
+}
+.hero span {
+  display: block;
+  overflow: hidden;
+}
+.hero i {
+  display: block;
+  font-style: normal;
+  transform: translateY(110%);
+  animation: hero-in 1.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.hero span:nth-child(2) i { animation-delay: 0.1s; }
+@keyframes hero-in { to { transform: translateY(0); } }
+.headline.is-quiet { opacity: 0; }
+.headline { transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1); }
+.credit, .coords {
+  position: absolute;
+  margin: 0;
+  font-family: "Geist Mono", ui-monospace, monospace;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+.credit { left: 28px; bottom: 22px; max-width: 36em; }
+.coords { right: 28px; bottom: 22px; letter-spacing: 0.04em; }
+
+#loader, #fail {
+  position: fixed;
+  inset: 0;
+  z-index: 8;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 14px;
+  background: var(--bg);
+}
+#loader[hidden], #fail[hidden] { display: none !important; }
+#loader p, #fail {
+  margin: 0;
+  font-family: "Geist Mono", ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.42em;
+  color: var(--muted);
+}
+#fail { letter-spacing: 0.08em; padding: 24px; text-align: center; }
+.loader-line {
+  width: 72px;
+  height: 1px;
+  background: rgba(236, 234, 228, 0.18);
+}
+.loader-line span {
+  display: block;
+  height: 1px;
+  width: 0%;
+  background: var(--ink);
+  transition: width 0.2s linear;
+}
+html.is-ready #loader { opacity: 0; pointer-events: none; transition: opacity 0.35s linear; }
+
+#drive { height: 460vh; }
+.reading {
+  position: relative;
+  z-index: 5;
+  background: var(--bg);
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 12vh 1.4rem 18vh;
+}
+.reading h1, .reading h2 {
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+}
+.reading h1 { font-size: clamp(2rem, 6vw, 3.1rem); margin: 0 0 0.8rem; }
+.reading h2 { font-size: 1.25rem; margin: 2rem 0 0.4rem; }
+.reading p, .reading li { color: var(--muted); line-height: 1.55; }
+.reading a { color: var(--ink); }
+
+html.is-still #drive { height: 100vh; }
+html.is-still #loader { display: none; }
+
+@media (max-width: 700px) {
+  #frame { inset: 8px; }
+  .top { padding: 18px 16px 0; }
+  .tabs {
+    display: flex;
+    justify-content: stretch;
+    overflow: hidden;
+    gap: 0;
+    margin: 12px 16px 0;
+    padding: 3px;
+    border: 1px solid rgba(236, 234, 228, 0.16);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.04);
+  }
+  .tabs button {
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 32px;
+    font-size: 9px;
+    letter-spacing: 0.01em;
+    padding: 0 1px;
+    border: 0;
+    border-radius: 9px;
+  }
+  .headline { left: 16px; right: 16px; bottom: 78px; }
+  .headline h1 { font-size: 32px; }
+  .credit { left: 16px; right: 16px; bottom: 14px; font-size: 11px; }
+  .coords { right: 16px; bottom: 58px; font-size: 11px; }
+  .call { width: min(168px, 46vw); }
+  .call .fig { font-size: 20px; }
+  .call .note { font-size: 13px; line-height: 1.3; }
+  .call .idx { font-size: 11px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.is-ready #loader { transition: none; }
+}
