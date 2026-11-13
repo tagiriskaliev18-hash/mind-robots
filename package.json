@@ -11,6 +11,11 @@
   "license": "ISC",
   "type": "module",
   "devDependencies": {
-    "playwright": "^1.49.1"
+    "@gltf-transform/cli": "^4.5.1",
+    "gsap": "^3.12.5",
+    "n8ao": "^2.0.2",
+    "playwright": "^1.49.1",
+    "postprocessing": "^6.39.6",
+    "three": "^0.170.0"
   }
 }

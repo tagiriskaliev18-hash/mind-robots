@@ -1,0 +1,5 @@
+node_modules/
+critic/
+tools/.cache_g1/
+tools/__pycache__/
+__pycache__/

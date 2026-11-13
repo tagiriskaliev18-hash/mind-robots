@@ -3,11 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>{{PRODUCT_NAME}} — Mind</title>
-  <meta name="description" content="{{META_DESCRIPTION}}">
+  <title>Unitree G1 — Mind</title>
+  <meta name="description" content="Живая 3D-сцена гуманоидного робота Unitree G1 в реальном масштабе 1,32 м: 3D-лидар Livox Mid-360, трёхпалые кисти Dex3-1, 43 степени свободы, пружинный разбор и сборка.">
   <meta name="theme-color" content="#09090f">
+  <meta property="og:title" content="Unitree G1 — Mind">
+  <meta property="og:description" content="Живая real-time 3D-разборка гуманоидного робота Unitree G1: одна непрерывная камера, пружинная физика и выносные узлы.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="fonts/Geist-Regular.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="fonts/Geist-Medium.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="fonts/GeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/model.glb" as="fetch" crossorigin>
   <link rel="stylesheet" href="css/fonts.css">
   <link rel="stylesheet" href="css/styles.css">
   <script>
@@ -18,14 +24,15 @@
 </head>
 <body>
   <a class="skip" href="#reading">К тексту</a>
-  <canvas id="stage" aria-label="{{PRODUCT_NAME}}, интерактивная 3D-модель"></canvas>
+  <canvas id="stage" aria-label="Unitree G1, интерактивная 3D-модель"></canvas>
   <div id="vignette" aria-hidden="true"></div>
   <div id="grain" aria-hidden="true"></div>
 
   <div id="hud">
     <header class="top">
-      <span class="mark" aria-hidden="true">M</span>
+      <a class="mark" href="#reading" aria-label="К техническому описанию">M</a>
       <span class="word">Mind</span>
+      <span class="model-tag">Unitree G1</span>
       <p class="index" id="hud-index"></p>
     </header>
     <nav class="tabs" id="tabs" aria-label="Разделы"></nav>
@@ -33,27 +40,60 @@
     <aside class="call" id="c0" hidden></aside>
     <aside class="call" id="c1" hidden></aside>
     <aside class="call" id="c2" hidden></aside>
-    <h1 class="sr-only" id="headline">{{HEADLINE_FULL}}</h1>
-    <p class="credit">{{ASSET_CREDIT}}</p>
+    <h1 class="sr-only" id="headline">Unitree G1 — живая кинематика в масштабе 1,32 м</h1>
+    <p class="credit">Модель: Unitree G1, BSD-3-Clause, © Unitree Robotics, via MuJoCo Menagerie.</p>
     <p class="coords" id="hud-coords">X 0.00 · Y 0.00 · Z 0.00</p>
   </div>
 
   <div id="loader"><div class="loader-line"><span id="loader-bar"></span></div><p>СБОРКА</p></div>
-  <p id="fail" hidden>Модель не открылась. Обновите страницу.</p>
+  <p id="fail" hidden>Модель не открылась. Проверьте поддержку WebGL2 и обновите страницу.</p>
 
   <div id="drive"></div>
-  <article id="reading" class="reading">{{READING_HTML}}</article>
 
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+  <article id="reading" class="reading">
+    <h2>Компактная кинематика без гидравлики</h2>
+    <p>Unitree G1 уводит гуманоидную платформу от тяжёлых двухметровых рам к плотной механике ростом 1,32 м и массой 35 кг. Меньшая инерция звеньев позволяет гасить толчки шагом, безопасно работать рядом с человеком и складывать робота в транспортный габарит 690 × 450 × 300 мм.</p>
+
+    <dl class="spec-grid">
+      <div class="spec-item"><dt>Рост в стойке</dt><dd>1,32 м</dd></div>
+      <div class="spec-item"><dt>Снаряжённая масса</dt><dd>35 кг</dd></div>
+      <div class="spec-item"><dt>Степени свободы</dt><dd>23–43 DOF</dd></div>
+      <div class="spec-item"><dt>Момент колена EDU</dt><dd>120 Н·м</dd></div>
+      <div class="spec-item"><dt>Скорость хода</dt><dd>2,0 м/с</dd></div>
+      <div class="spec-item"><dt>Аккумулятор 13S · 2 ч</dt><dd>9000 мА·ч</dd></div>
+    </dl>
+
+    <h2>Купол восприятия на 360 градусов</h2>
+    <p>В голове стоят твердотельный 3D-лидар Livox Mid-360 и камера глубины Intel RealSense D435i. Лидар строит круговое облако точек помещения без слепых зон под ногами, а стереопара ведёт кисть в ближней зоне захвата. Два инерциальных модуля — в торсе и в тазовом узле — замыкают оценку равновесия на высокой частоте.</p>
+
+    <h2>Полый вал и трёхпалый схват Dex3-1</h2>
+    <p>Все силовые оси построены на синхронных электромоторах с постоянными магнитами (PMSM) и внутренней проводкой без внешних жгутов. В конфигурации G1 EDU коленный узел выдаёт до 120 Н·м пикового момента, а трёхпалые кисти Dex3-1 добавляют по 7 активных степеней свободы на каждую руку с гибридным контролем силы и положения.</p>
+
+    <h2>Из симуляции сразу в железо</h2>
+    <p>Открытая MJCF-модель Unitree G1 в коллекции Google DeepMind MuJoCo Menagerie и среде MuJoCo Playground позволяет обучать политики ходьбы и манипуляции с прямым переносом на реальные приводы без ручной пересборки кинематического дерева.</p>
+
+    <h2>Источники и лицензии</h2>
+    <p>3D-модель: Unitree G1 (BSD-3-Clause, © HangZhou YuShu Technology Co., Ltd. / Unitree Robotics), пакет MuJoCo Menagerie. Студийная карта освещения: Poly Haven studio_small_09 (CC0). Гарнитуры Geist и Geist Mono: Vercel, SIL Open Font License 1.1.</p>
+    <ul>
+      <li><a href="https://www.unitree.com/g1/" target="_blank" rel="noopener">Unitree Robotics — официальный паспорт и спецификации G1 / G1 EDU</a></li>
+      <li><a href="https://www.unitree.com/dex3-1/" target="_blank" rel="noopener">Unitree Dex3-1 — трёхпалая силомоментная кисть (7 DOF)</a></li>
+      <li><a href="https://spectrum.ieee.org/unitree-g1" target="_blank" rel="noopener">IEEE Spectrum — разбор гуманоидной платформы Unitree G1</a></li>
+      <li><a href="https://github.com/google-deepmind/mujoco_menagerie/tree/main/unitree_g1" target="_blank" rel="noopener">Google DeepMind MuJoCo Menagerie — MJCF-описание и меши Unitree G1 (BSD-3-Clause)</a></li>
+      <li><a href="https://github.com/unitreerobotics/unitree_ros/tree/master/robots/g1_description" target="_blank" rel="noopener">Unitree ROS — заводская кинематическая схема g1_description</a></li>
+      <li><a href="https://arxiv.org/abs/2502.08844" target="_blank" rel="noopener">Zakka et al., MuJoCo Playground (arXiv:2502.08844) — sim-to-real на G1</a></li>
+    </ul>
+  </article>
+
+  <script src="js/vendor/gsap.min.js"></script>
+  <script src="js/vendor/ScrollTrigger.min.js"></script>
   <script type="importmap">
   {
     "imports": {
-      "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
-      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/",
-      "three/examples/jsm/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/",
-      "postprocessing": "https://cdn.jsdelivr.net/npm/postprocessing@6.39.6/build/index.js",
-      "n8ao": "https://cdn.jsdelivr.net/npm/n8ao@2.0.2/dist/N8AO.js"
+      "three": "./js/vendor/three/build/three.module.js",
+      "three/addons/": "./js/vendor/three/examples/jsm/",
+      "three/examples/jsm/": "./js/vendor/three/examples/jsm/",
+      "postprocessing": "./js/vendor/postprocessing/index.js",
+      "n8ao": "./js/vendor/n8ao/N8AO.js"
     }
   }
   </script>

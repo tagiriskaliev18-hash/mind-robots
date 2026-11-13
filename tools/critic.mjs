@@ -14,7 +14,12 @@ const report = { url, at: new Date().toISOString(), fails: [], shots: [] };
 const fail = (m) => { report.fails.push(m); console.log("FAIL", m); };
 
 for (const [ename, engine] of engines) {
-  const browser = await engine.launch({ args: ename === "chromium" && soft ? ["--use-angle=swiftshader", "--enable-unsafe-swiftshader"] : [] });
+  let browser;
+  if (ename === "chromium" && !soft) {
+    browser = await engine.launch({ channel: "chrome" }).catch(() => engine.launch());
+  } else {
+    browser = await engine.launch({ args: ename === "chromium" && soft ? ["--use-angle=swiftshader", "--enable-unsafe-swiftshader"] : [] });
+  }
   for (const v of VIEWS) {
     const ctx = await browser.newContext({ viewport: { width: v.width, height: v.height }, deviceScaleFactor: v.dpr, isMobile: v.mobile && ename === "chromium", hasTouch: v.mobile });
     const page = await ctx.newPage();
@@ -44,6 +49,19 @@ for (const [ename, engine] of engines) {
     });
     if (!fonts.geist || !fonts.mono) fail(`${ename}/${v.name}: шрифт не загружен ${JSON.stringify(fonts)}`);
     if (!fonts.cyrillic) fail(`${ename}/${v.name}: кириллица рисуется fallback-шрифтом`);
+    const canvasAlive = await page.evaluate(() => {
+      const m = window.__mind;
+      const gl = m.stage.renderer.getContext();
+      m.stage.render(0.016);
+      const w = Math.min(160, gl.drawingBufferWidth), h = Math.min(160, gl.drawingBufferHeight);
+      const x = Math.floor((gl.drawingBufferWidth - w) / 2), y = Math.floor((gl.drawingBufferHeight - h) / 2);
+      const px = new Uint8Array(w * h * 4);
+      gl.readPixels(x, y, w, h, gl.RGBA, gl.UNSIGNED_BYTE, px);
+      let lit = 0;
+      for (let i = 0; i < px.length; i += 4) if (px[i] > 28 || px[i + 1] > 28 || px[i + 2] > 28) lit++;
+      return lit;
+    });
+    if (canvasAlive < 50) fail(`${ename}/${v.name}: пустой WebGL-канвас (${canvasAlive} светлых пикселей)`);
     await page.screenshot({ path: `critic/${ename}-${v.name}-hero.png` });
     report.shots.push(`critic/${ename}-${v.name}-hero.png`);
 
