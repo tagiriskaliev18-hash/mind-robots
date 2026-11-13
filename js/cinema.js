@@ -6,6 +6,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
@@ -391,41 +392,61 @@ function setupMaterials() {
 /* ==========================================================================
    APOLLO MODEL LOADER & PART PARSING
    ========================================================================== */
-function loadApolloModel() {
+async function loadApolloModel() {
   loaderText.textContent = 'ЗАГРУЗКА 3D АССЕТОВ...';
   loaderFill.style.width = '35%';
 
   const loaderGltf = new GLTFLoader();
-  loaderGltf.load(
-    'assets/apollo-web.glb',
-    (gltf) => {
-      loaderFill.style.width = '85%';
-      loaderText.textContent = 'ИНИЦИАЛИЗАЦИЯ КИНЕМАТИКИ...';
-
-      const model = gltf.scene;
-      scene.add(robotGroup);
-      robotGroup.add(model);
-
-      parseParts(model);
-
-      loaderFill.style.width = '100%';
-      setTimeout(() => {
-        loader.classList.add('hidden');
-        applyAct(0);
-        audio.playSubHum();
-      }, 400);
-    },
-    (xhr) => {
-      if (xhr.lengthComputable) {
-        const percent = Math.round((xhr.loaded / xhr.total) * 70);
-        loaderFill.style.width = `${percent}%`;
+  if (typeof MeshoptDecoder !== 'undefined') {
+    if (MeshoptDecoder.ready) {
+      try {
+        await MeshoptDecoder.ready;
+      } catch (e) {
+        console.warn('Meshopt ready warning:', e);
       }
-    },
-    (err) => {
-      console.error('Error loading Apollo:', err);
-      loaderText.textContent = 'ОШИБКА ЗАГРУЗКИ. ОБНОВИТЕ СТРАНИЦУ.';
     }
-  );
+    loaderGltf.setMeshoptDecoder(MeshoptDecoder);
+  }
+
+  const loadWithFallback = (url, isFallback = false) => {
+    loaderGltf.load(
+      url,
+      (gltf) => {
+        loaderFill.style.width = '85%';
+        loaderText.textContent = 'ИНИЦИАЛИЗАЦИЯ КИНЕМАТИКИ...';
+
+        const model = gltf.scene;
+        scene.add(robotGroup);
+        robotGroup.add(model);
+
+        parseParts(model);
+
+        loaderFill.style.width = '100%';
+        setTimeout(() => {
+          loader.classList.add('hidden');
+          applyAct(0);
+          audio.playSubHum();
+        }, 400);
+      },
+      (xhr) => {
+        if (xhr.lengthComputable && xhr.total > 0) {
+          const percent = Math.min(85, Math.round((xhr.loaded / xhr.total) * 75) + 10);
+          loaderFill.style.width = `${percent}%`;
+        }
+      },
+      (err) => {
+        console.error('Error loading model from ' + url + ':', err);
+        if (!isFallback) {
+          console.warn('Attempting fallback to assets/apollo-web.glb...');
+          loadWithFallback('assets/apollo-web.glb', true);
+        } else {
+          loaderText.textContent = 'ОШИБКА ЗАГРУЗКИ. ОБНОВИТЕ СТРАНИЦУ.';
+        }
+      }
+    );
+  };
+
+  loadWithFallback('assets/apollo-live.glb', false);
 }
 
 function parseParts(model) {
@@ -821,8 +842,12 @@ function animate() {
   // Project Leader Lines
   updateLeaderLines();
 
-  // Render Postprocessing pass
-  composer.render();
+  // Render Postprocessing pass with safe fallback
+  try {
+    composer.render();
+  } catch (e) {
+    renderer.render(scene, camera);
+  }
 }
 
 // Start Three.js
