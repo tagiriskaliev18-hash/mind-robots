@@ -3,97 +3,153 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Mind — Apollo</title>
-  <meta name="description" content="Живая модель Apptronik Apollo. Голова, руки, корпус, привод, разбор и сборка.">
   <meta name="theme-color" content="#09090f">
-  <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="css/styles.css">
-  <script>
-    try {
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-        document.documentElement.classList.add("is-still");
-      }
-    } catch (e) {}
-  </script>
+  <title>MIND Robotics — Apollo | Физический интеллект и автономные роботы</title>
+  <meta name="description" content="MIND Robotics: кинематографический интерактивный центр автономного робота Apptronik Apollo. Разбор на пружинной физике, макро-оптика, контур крутящего момента, LiDAR-скан и VLA нейросети.">
+  <meta name="author" content="MIND">
+  
+  <link rel="icon" href="media/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/cinema.css">
+  
+  <!-- Preload fonts & critical 3D assets -->
+  <link rel="preload" href="fonts/geist-cyrillic-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/geist-mono-cyrillic-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/apollo-web.glb" as="fetch" crossorigin>
 </head>
 <body>
-  <a class="skip" href="#reading">К тексту</a>
+
+  <!-- Loading Screen -->
+  <div class="cinema-loader" id="cinemaLoader">
+    <div class="loader-mark">M</div>
+    <div class="loader-progress-track">
+      <div class="loader-progress-fill" id="loaderFill"></div>
+    </div>
+    <p class="loader-text" id="loaderText">ИНИЦИАЛИЗАЦИЯ КИНЕМАТИКИ...</p>
+  </div>
+
+  <!-- Three.js Stage Canvas -->
   <canvas id="stage"></canvas>
-  <div id="vignette" aria-hidden="true"></div>
-  <div id="grain" aria-hidden="true"></div>
-  <div id="frame" aria-hidden="true"></div>
 
-  <div id="hud">
-    <header class="top">
-      <a class="mark" href="#reading">M</a>
-      <span class="word">Mind</span>
-      <p class="index" id="hud-index">01<span>/06</span></p>
-    </header>
+  <!-- Atmospheric Post & Scan Effects -->
+  <div class="fx-vignette" aria-hidden="true"></div>
+  <div class="fx-grain" aria-hidden="true"></div>
+  <div class="laser-scan-overlay" id="laserOverlay">
+    <div class="laser-scan-line"></div>
+  </div>
 
-    <nav class="tabs" id="tabs" aria-label="Разделы">
-      <button type="button" data-tab="0">Голова</button>
-      <button type="button" data-tab="1">Руки</button>
-      <button type="button" data-tab="2">Корпус</button>
-      <button type="button" data-tab="3">Привод</button>
-      <button type="button" data-tab="4">Разбор</button>
-      <button type="button" data-tab="5">Сборка</button>
-    </nav>
+  <!-- Cyber Anamorphic Frame Brackets -->
+  <div class="hud-frame" aria-hidden="true">
+    <div class="hud-bracket hud-bracket-tl"></div>
+    <div class="hud-bracket hud-bracket-tr"></div>
+    <div class="hud-bracket hud-bracket-bl"></div>
+    <div class="hud-bracket hud-bracket-br"></div>
+  </div>
 
-    <svg id="leaders" aria-hidden="true"></svg>
-    <aside class="call" id="c0" hidden></aside>
-    <aside class="call" id="c1" hidden></aside>
-    <aside class="call" id="c2" hidden></aside>
+  <!-- In-Scene Volumetric Typography (Occluded behind Apollo) -->
+  <div class="hero-volumetric-type" id="heroType">
+    <p class="type-eyebrow">PHYSICAL AI · AUTONOMOUS ARCHITECTURE</p>
+    <h1 class="type-headline">MIND · APOLLO</h1>
+    <p class="type-subtext">Робот больше не повторяет траекторию. Он понимает физический мир.</p>
+  </div>
 
-    <div class="headline" id="headline">
-      <p class="kicker">Apollo · 1,7 м · 73 кг</p>
-      <h1 class="hero">
-        <span><i>Робот больше не</i></span>
-        <span><i>повторяет траекторию.</i></span>
-      </h1>
+  <!-- Top Bar (Brand & Telemetry Status) -->
+  <header class="top-bar">
+    <div class="brand-badge">
+      <span class="brand-mark">M</span>
+      <span class="brand-text">MIND<span style="color:var(--cyan);margin-left:3px;">·</span>ROBOTICS</span>
+      <span class="brand-meta">APOLLO // v2.4</span>
     </div>
 
-    <p class="credit">Модель: Apptronik Apollo, Apache-2.0, © 2024 Apptronik, via MuJoCo Menagerie.</p>
-    <p class="coords" id="hud-coords">X 0.00 · Y 0.00 · Z 0.00</p>
-  </div>
+    <div class="status-badge">
+      <span class="status-dot"></span>
+      <span id="hudCoords">X: 0.00 · Y: 0.95 · Z: 3.15</span>
+    </div>
 
-  <div id="loader">
-    <div class="loader-line" aria-hidden="true"><span id="loader-bar"></span></div>
-    <p>СБОРКА</p>
-  </div>
-  <p id="fail" hidden>Модель не открылась. Обновите страницу.</p>
+    <div class="top-actions">
+      <button class="action-btn" id="btnAudio" aria-label="Звуковые эффекты">AUDIO: ON</button>
+      <button class="action-btn" id="btnLidar" aria-label="Режим LiDAR">LIDAR: OFF</button>
+      <button class="action-btn" id="btnReset" aria-label="Сброс ракурса">RESET CAM</button>
+    </div>
+  </header>
 
-  <div id="drive"></div>
+  <!-- Dynamic SVG Leader Lines & Callout Cards -->
+  <svg id="leaders" aria-hidden="true"></svg>
+  <div class="callout-container" id="calloutsContainer"></div>
 
-  <article id="reading" class="reading">
-    <p class="kicker">Mind</p>
-    <h1>Робот больше не повторяет траекторию.</h1>
-    <p>Она снимает мир, сверяет его с собственным телом и отвечает движением. Камера, модель и привод — одна петля. Пока петля разомкнута, это станок.</p>
-    <h2>Чувствует</h2>
-    <p>Кадр приходит десятки раз в секунду. Энкодер и гироскоп — сотни и тысячи. Пока эти ответы не сведены, захват остаётся догадкой.</p>
-    <h2>Думает</h2>
-    <p>Картинка и короткая фраза становятся куском траектории. Баланс считается отдельно и быстрее. Связь может моргнуть — ноги остаются.</p>
-    <h2>Действует</h2>
-    <p>Намерение становится током. Сотни герц, на силовых осях около килогерца. Ошибка сенсора возвращается в следующий такт.</p>
-    <h2>Петля уже замкнута.</h2>
-    <p>Цифры Apollo — из показа 2023 года: рост 1,7 м, масса около 73 кг, полезная нагрузка 25 кг, сменная батарея на 4 часа, электрические приводы. Источники — IEEE Spectrum и страница Apptronik о показе Apollo.</p>
-    <p>Модель: Apptronik Apollo, Apache-2.0, © 2024 Apptronik, via MuJoCo Menagerie.</p>
+  <!-- Lateral Telemetry Panels (Desktop Pro Mode) -->
+  <aside class="telemetry-left" aria-hidden="true">
+    <div class="telemetry-box">
+      <div class="telemetry-label"><span>КРУТЯЩИЙ МОМЕНТ</span><span>MAX</span></div>
+      <div class="telemetry-val">180 Н·м</div>
+      <div class="telemetry-bar"><div class="telemetry-fill" style="width: 78%;"></div></div>
+    </div>
+    <div class="telemetry-box">
+      <div class="telemetry-label"><span>ШИНА ПИТАНИЯ</span><span>DC</span></div>
+      <div class="telemetry-val">48.2 В</div>
+      <div class="telemetry-bar"><div class="telemetry-fill" style="width: 92%;"></div></div>
+    </div>
+    <div class="telemetry-box">
+      <div class="telemetry-label"><span>ЧАСТОТА КОНТУРА</span><span>ACTUATOR</span></div>
+      <div class="telemetry-val">1000 Гц</div>
+      <div class="telemetry-bar"><div class="telemetry-fill" style="width: 99%;"></div></div>
+    </div>
+  </aside>
+
+  <aside class="telemetry-right" aria-hidden="true">
+    <div class="telemetry-box">
+      <div class="telemetry-label"><span>VLA МОДЕЛЬ</span><span>NEURAL</span></div>
+      <div class="telemetry-val" style="font-size: 13px;">OpenVLA / π0</div>
+      <div class="telemetry-bar"><div class="telemetry-fill" style="width: 85%;"></div></div>
+    </div>
+    <div class="telemetry-box">
+      <div class="telemetry-label"><span>ЗАДЕРЖКА ЗРЕНИЯ</span><span>REALTIME</span></div>
+      <div class="telemetry-val">1.8 мс</div>
+      <div class="telemetry-bar"><div class="telemetry-fill" style="width: 32%;"></div></div>
+    </div>
+    <div class="telemetry-box">
+      <div class="telemetry-label"><span>LiDAR ЧАСТОТА</span><span>128-CH</span></div>
+      <div class="telemetry-val">128K pts/s</div>
+      <div class="telemetry-bar"><div class="telemetry-fill" style="width: 88%;"></div></div>
+    </div>
+  </aside>
+
+  <!-- Director Console (Bottom Dock) -->
+  <footer class="director-dock">
+    <!-- Scrubbers Row -->
+    <div class="scrubber-row">
+      <div class="scrub-group">
+        <span class="scrub-label">MACRO ZOOM:</span>
+        <input type="range" class="scrub-slider" id="zoomSlider" min="20" max="48" value="32" aria-label="Масштаб камеры">
+      </div>
+      <div class="scrub-group">
+        <span class="scrub-label">TEARDOWN:</span>
+        <input type="range" class="scrub-slider" id="explodeSlider" min="0" max="100" value="0" aria-label="Степень разбора">
+      </div>
+    </div>
+
+    <!-- Mode Tabs Segmented Control -->
+    <nav class="mode-tabs" id="modeTabs" aria-label="Режимы кино-камеры">
+      <!-- Generated via JS -->
+    </nav>
+  </footer>
+
+  <!-- Semantic Reading Section for Search Engines and Accessibility -->
+  <article class="sr-reading" id="reading">
+    <h2>MIND Robotics — Антропоморфный робот Apollo</h2>
+    <p>Современные антропоморфные роботы объединяют зрение, языковые модели и контур актуации в единую петлю (Vision-Language-Action). Камера воспринимает физический мир с частотой 30 кадров в секунду, гироскопы и датчики момента — с частотой 1000 Гц. Баланс и траектория рассчитываются непрерывно.</p>
+    <h3>Технические характеристики Apollo:</h3>
     <ul>
-      <li><a href="https://www.figure.ai/news/helix-2-5-zero-shot-30-home-generalization">Figure, Helix 2.5</a></li>
-      <li><a href="https://www.figure.ai/news/helix-02">Figure, Helix 02</a></li>
-      <li><a href="https://bostondynamics.com/blog/boston-dynamics-unveils-new-atlas-robot-to-revolutionize-industry/">Boston Dynamics, Atlas</a></li>
-      <li><a href="https://github.com/boston-dynamics/spot-sdk">Spot SDK</a></li>
-      <li><a href="https://www.1x.tech/discover/world-model-self-learning">1X World Model</a></li>
-      <li><a href="https://github.com/unitreerobotics/unitree_sdk2">Unitree SDK2</a></li>
-      <li><a href="https://github.com/Physical-Intelligence/openpi">openpi</a></li>
-      <li><a href="https://ir.tesla.com/">Tesla, III квартал 2026</a></li>
-      <li><a href="https://github.com/google-deepmind/mujoco_menagerie/tree/main/apptronik_apollo">MuJoCo Menagerie, Apollo</a></li>
-      <li><a href="https://spectrum.ieee.org/humanoid-robot">IEEE Spectrum, Apollo</a></li>
-      <li><a href="https://apptronik.com/news-collection/meet-apollo-the-iphone-of-humanoid-robots">Apptronik, показ Apollo</a></li>
+      <li>Рост: 1,70 м</li>
+      <li>Масса: 73 кг</li>
+      <li>Полезная нагрузка: 25 кг</li>
+      <li>Энергоблок: сменная батарея на 4 часа непрерывной работы</li>
+      <li>Приводы: электрические гармонические редукторы без гидравлики</li>
     </ul>
+    <p>Модель: Apptronik Apollo, лицензия Apache-2.0, © 2024 Apptronik, предоставлено через MuJoCo Menagerie.</p>
   </article>
 
-  <script src="js/vendor/gsap.min.js"></script>
-  <script src="js/vendor/ScrollTrigger.min.js"></script>
+  <!-- Import Map & Scripts -->
+  <script src="./js/vendor/gsap.min.js"></script>
   <script type="importmap">
   {
     "imports": {
@@ -102,6 +158,7 @@
     }
   }
   </script>
-  <script type="module" src="js/live.bundle.js"></script>
+  <script type="module" src="./js/cinema.js"></script>
+
 </body>
 </html>
