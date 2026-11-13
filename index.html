@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>{{PRODUCT_NAME}} — Mind</title>
+  <meta name="description" content="{{META_DESCRIPTION}}">
+  <meta name="theme-color" content="#09090f">
+  <link rel="preload" href="fonts/Geist-Medium.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/GeistMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/fonts.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <script>
+    try {
+      if (matchMedia("(prefers-reduced-motion: reduce)").matches) document.documentElement.classList.add("is-still");
+    } catch (e) {}
+  </script>
+</head>
+<body>
+  <a class="skip" href="#reading">К тексту</a>
+  <canvas id="stage" aria-label="{{PRODUCT_NAME}}, интерактивная 3D-модель"></canvas>
+  <div id="vignette" aria-hidden="true"></div>
+  <div id="grain" aria-hidden="true"></div>
+
+  <div id="hud">
+    <header class="top">
+      <span class="mark" aria-hidden="true">M</span>
+      <span class="word">Mind</span>
+      <p class="index" id="hud-index"></p>
+    </header>
+    <nav class="tabs" id="tabs" aria-label="Разделы"></nav>
+    <svg id="leaders" aria-hidden="true"></svg>
+    <aside class="call" id="c0" hidden></aside>
+    <aside class="call" id="c1" hidden></aside>
+    <aside class="call" id="c2" hidden></aside>
+    <h1 class="sr-only" id="headline">{{HEADLINE_FULL}}</h1>
+    <p class="credit">{{ASSET_CREDIT}}</p>
+    <p class="coords" id="hud-coords">X 0.00 · Y 0.00 · Z 0.00</p>
+  </div>
+
+  <div id="loader"><div class="loader-line"><span id="loader-bar"></span></div><p>СБОРКА</p></div>
+  <p id="fail" hidden>Модель не открылась. Обновите страницу.</p>
+
+  <div id="drive"></div>
+  <article id="reading" class="reading">{{READING_HTML}}</article>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/",
+      "three/examples/jsm/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/",
+      "postprocessing": "https://cdn.jsdelivr.net/npm/postprocessing@6.39.6/build/index.js",
+      "n8ao": "https://cdn.jsdelivr.net/npm/n8ao@2.0.2/dist/N8AO.js"
+    }
+  }
+  </script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
