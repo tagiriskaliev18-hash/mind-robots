@@ -64,24 +64,40 @@ body {
   outline-offset: 3px;
 }
 
-#stage {
-  position: fixed;
-  inset: 0;
-  width: 100vw;
+.live-section {
+  position: relative;
+  z-index: 2;
+  background: var(--bg);
+}
+
+.live-pin {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  height: 100vh;
   height: 100svh;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+#stage {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   display: block;
   touch-action: pan-y;
 }
 
 #vignette {
-  position: fixed;
+  position: absolute;
   inset: 0;
   pointer-events: none;
   background: radial-gradient(118% 88% at 50% 46%, transparent 56%, rgba(9, 9, 15, 0.84) 100%);
 }
 
 #grain {
-  position: fixed;
+  position: absolute;
   inset: -50%;
   pointer-events: none;
   opacity: 0.042;
@@ -90,7 +106,7 @@ body {
 }
 
 #hud {
-  position: fixed;
+  position: absolute;
   inset: 0;
   pointer-events: none;
   opacity: 0;
@@ -107,46 +123,19 @@ html.is-still #hud {
   pointer-events: auto;
 }
 
-.top {
+.live-top {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 22px 28px 0;
-  font: 400 12px var(--mono);
-  letter-spacing: 0.12em;
+  justify-content: space-between;
+  padding: 52px clamp(20px, 4.2vw, 60px) 0;
+  font: 400 11px/1 var(--mono);
+  letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 
-.mark {
-  width: 24px;
-  height: 24px;
-  display: grid;
-  place-items: center;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  color: var(--ink);
-  text-decoration: none;
-  font-size: 11px;
-  transition: border-color 0.35s var(--ease), background 0.35s var(--ease);
-}
-
-.mark:hover {
-  border-color: rgba(236, 234, 228, 0.52);
-  background: rgba(255, 255, 255, 0.03);
-}
-
-.mark:focus-visible {
-  outline: 1px solid var(--cyan);
-  outline-offset: 3px;
-}
-
-.word {
-  color: var(--ink);
-}
-
-.model-tag {
-  color: var(--muted);
-  letter-spacing: 0.08em;
+.live-kicker {
+  color: var(--cyan);
+  opacity: 0.88;
 }
 
 .index {
@@ -163,7 +152,13 @@ html.is-still #hud {
   display: flex;
   justify-content: center;
   gap: 8px;
-  padding: 16px 28px 0;
+  padding: 10px 28px 0;
+}
+
+@media (min-width: 980px) {
+  .tabs {
+    margin-top: -22px;
+  }
 }
 
 .tabs button {
@@ -201,7 +196,7 @@ html.is-still #hud {
 }
 
 #leaders {
-  position: fixed;
+  position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
@@ -280,7 +275,7 @@ html.is-still #hud {
 }
 
 #loader {
-  position: fixed;
+  position: absolute;
   inset: 0;
   z-index: 5;
   display: grid;
@@ -292,6 +287,10 @@ html.is-still #hud {
   letter-spacing: 0.28em;
   color: var(--muted);
   transition: opacity 0.75s var(--ease);
+}
+
+#loader[hidden] {
+  display: none;
 }
 
 #loader p {
@@ -319,7 +318,7 @@ html.is-still #loader {
 }
 
 #fail {
-  position: fixed;
+  position: absolute;
   inset: auto 0 40% 0;
   text-align: center;
   color: var(--muted);
@@ -328,7 +327,6 @@ html.is-still #loader {
 
 #drive {
   position: relative;
-  pointer-events: none;
 }
 
 .reading {
@@ -415,17 +413,14 @@ html.is-still #loader {
 }
 
 @media (max-width: 700px) {
-  .top {
-    padding: 16px 16px 0;
-    gap: 8px;
-  }
-  .model-tag {
-    display: none;
+  .live-top {
+    padding: 42px 16px 0;
+    font-size: 9.5px;
   }
   .tabs {
     justify-content: stretch;
     gap: 0;
-    margin: 10px 16px 0;
+    margin: 5px 16px 0;
     padding: 3px;
     border: 1px solid var(--glass-line);
     border-radius: 12px;

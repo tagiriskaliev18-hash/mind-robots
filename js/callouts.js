@@ -95,6 +95,7 @@ export function createCallouts({ els, svg, isPhone, getSafe }) {
       }
     }
 
+    const svgRect = svg.getBoundingClientRect();
     for (const side of ["left", "right"]) {
       for (const it of cols[side]) {
         const L = lines[it.i];
@@ -105,9 +106,9 @@ export function createCallouts({ els, svg, isPhone, getSafe }) {
         }
         it.el.style.opacity = String(alpha);
         const r = it.el.getBoundingClientRect();
-        const x1 = side === "left" ? r.right : r.left;
-        const y1 = r.top + 0.5;
-        const elbow = side === "left" ? Math.max(r.right + 10, it.x - 18) : Math.min(r.left - 10, it.x + 18);
+        const x1 = (side === "left" ? r.right : r.left) - svgRect.left;
+        const y1 = r.top - svgRect.top + 0.5;
+        const elbow = side === "left" ? Math.max(x1 + 10, it.x - 18) : Math.min(x1 - 10, it.x + 18);
         L.path.setAttribute("points", `${it.x.toFixed(1)},${it.y.toFixed(1)} ${elbow.toFixed(1)},${it.y.toFixed(1)} ${elbow.toFixed(1)},${y1.toFixed(1)} ${x1.toFixed(1)},${y1.toFixed(1)}`);
         L.dot.setAttribute("cx", it.x.toFixed(1));
         L.dot.setAttribute("cy", it.y.toFixed(1));

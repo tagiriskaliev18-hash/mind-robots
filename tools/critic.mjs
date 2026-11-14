@@ -30,8 +30,8 @@ for (const [ename, engine] of engines) {
     page.on("requestfailed", (r) => failed.push(r.url()));
     page.on("response", (r) => { if (r.status() >= 400) failed.push(r.status() + " " + r.url()); });
     await page.goto(url, { waitUntil: "load" });
-    await page.waitForFunction(() => window.__mind && window.__mind.mode === "hero", null, { timeout: 90000 });
-    await page.waitForTimeout(900);
+    await page.waitForFunction(() => window.__mind && window.__mind.mode === "hero" && window.__story && window.__story.state().ready, null, { timeout: 90000 });
+    await page.waitForTimeout(300);
 
     const lcp = await page.evaluate(() => new Promise((res) => {
       new PerformanceObserver((l) => { const e = l.getEntries(); res(e.length ? Math.round(e[e.length - 1].startTime) : -1); }).observe({ type: "largest-contentful-paint", buffered: true });
@@ -40,15 +40,25 @@ for (const [ename, engine] of engines) {
     const fonts = await page.evaluate(async () => {
       await document.fonts.ready;
       const ok = (f) => [...document.fonts].some((ff) => ff.family.replace(/"/g, "") === f && ff.status === "loaded");
-      // Кириллица реально рисуется Geist, а не fallback: ширина строки должна отличаться от sans-serif.
       const c = document.createElement("canvas").getContext("2d");
       const s = "Сборка робота 0123";
       c.font = "500 40px Geist, monospace"; const a = c.measureText(s).width;
       c.font = "500 40px monospace"; const b = c.measureText(s).width;
-      return { geist: ok("Geist"), mono: ok("Geist Mono"), cyrillic: Math.abs(a - b) > 1 };
+      return {
+        geist: ok("Geist"),
+        mono: ok("Geist Mono"),
+        interTight: ok("Inter Tight"),
+        playfair: ok("Playfair Display"),
+        cyrillic: Math.abs(a - b) > 1
+      };
     });
-    if (!fonts.geist || !fonts.mono) fail(`${ename}/${v.name}: шрифт не загружен ${JSON.stringify(fonts)}`);
+    if (!fonts.geist || !fonts.mono || !fonts.interTight || !fonts.playfair) fail(`${ename}/${v.name}: шрифт не загружен ${JSON.stringify(fonts)}`);
     if (!fonts.cyrillic) fail(`${ename}/${v.name}: кириллица рисуется fallback-шрифтом`);
+
+    // Переходим в Акт II (Живой 3D-стенд) для проверки WebGL Hero и всех 6 табов
+    await page.evaluate(() => window.__mind.scrollToLiveHero());
+    await page.waitForTimeout(700);
+
     const canvasAlive = await page.evaluate(() => {
       const m = window.__mind;
       const gl = m.stage.renderer.getContext();
