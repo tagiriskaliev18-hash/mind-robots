@@ -1,0 +1,14 @@
+{
+  "schema": "mind-apollo-flow-inserts/v3",
+  "enabled": false,
+  "mode": "disabled",
+  "note": "FLOW_CLIPS_ENABLED is false: all defective apollo_01..06 clips remain hidden while keeping flexible insert slots (0..N) ready for clean camera/light inserts built on real Apollo photos.",
+  "blendTransition": true,
+  "crossfadeWidth": 0.028,
+  "fallback": "frames",
+  "poster": {
+    "desktop": "assets/frames/desktop/0001.webp",
+    "mobile": "assets/frames/mobile/0001.webp"
+  },
+  "inserts": []
+}

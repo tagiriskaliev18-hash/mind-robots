@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Unitree G1 — Mind</title>
-  <meta name="description" content="Кинематографическая сборка гуманоидного робота Unitree G1 по скроллу от светового CAD-каркаса до кремниевого ядра и живой real-time 3D-разбор с пружинной физикой.">
+  <title>Apptronik Apollo — Mind</title>
+  <meta name="description" content="Кинематографическая сборка гуманоидного робота Apptronik Apollo (1,73 м, 73 кг) по скроллу от светового CAD-каркаса до кремниевого ядра и живой real-time 3D-разбор с пружинной физикой.">
   <meta name="theme-color" content="#09090f">
-  <meta property="og:title" content="Unitree G1 — Mind">
-  <meta property="og:description" content="Сюжетная сборка робота по скроллу в одном непрерывном пролёте камеры и интерактивный real-time 3D-стенд.">
+  <meta property="og:title" content="Apptronik Apollo — Mind">
+  <meta property="og:description" content="Сюжетная сборка Apptronik Apollo по скроллу в одном непрерывном пролёте камеры и интерактивный real-time 3D-стенд.">
   <meta property="og:type" content="website">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="preload" href="fonts/InterTight-800-cyrillic.woff2" as="font" type="font/woff2" crossorigin>
@@ -35,7 +35,7 @@
       <span class="brand__mark" aria-hidden="true">M</span>
       <b>Mind</b>
       <span class="brand__sep" aria-hidden="true">·</span>
-      <span class="brand__sub">Unitree G1</span>
+      <span class="brand__sub">Apptronik Apollo</span>
     </a>
     <nav class="mode-switch" aria-label="Разделы страницы">
       <a href="#story" id="navStory" class="is-current">01 · Сборка</a>
@@ -45,17 +45,19 @@
   </header>
 
   <!-- АКТ I: Сюжетная сборка робота по скроллу (один непрерывный пролёт камеры) -->
-  <section class="story" id="story" aria-label="Сборка робота по этапам">
+  <section class="story" id="story" aria-label="Сборка Apptronik Apollo по этапам">
     <div class="story-stage" id="storyStage">
       <div class="stage__media" id="media">
-        <img class="stage__poster" id="poster" alt="Unitree G1 — этапы сборки от светового чертежа до готового робота" decoding="async" fetchpriority="high">
+        <img class="stage__poster" id="poster" alt="Apptronik Apollo — этапы сборки от светового чертежа до готового робота" decoding="async" fetchpriority="high">
         <canvas class="stage__canvas" id="film" aria-hidden="true"></canvas>
-        <video class="stage__video" id="filmVideo" muted playsinline preload="auto" aria-hidden="true"></video>
+        <video class="stage__video stage__video--a" id="filmVideo" muted playsinline preload="metadata" aria-hidden="true"></video>
+        <video class="stage__video stage__video--b" id="filmVideoB" muted playsinline preload="metadata" aria-hidden="true"></video>
       </div>
       <canvas class="stage__fx" id="fx" aria-hidden="true"></canvas>
       <div class="story-vignette" aria-hidden="true"></div>
       <div class="story-grain" aria-hidden="true"></div>
 
+      <div class="flow-slot" id="flowSlot" aria-hidden="true" hidden></div>
       <div class="copy" id="copy" aria-live="polite"></div>
       <div class="callouts" id="callouts" aria-hidden="true"></div>
       <nav class="dots" id="dots" aria-label="Этапы сборки"></nav>
@@ -66,19 +68,26 @@
       </div>
 
       <div class="finale" id="finale">
+        <video class="finale__neural" id="finaleNeuralVideo" muted loop playsinline preload="none" data-src="assets/video/scrub/bg_neural_loop_web.mp4" aria-hidden="true"></video>
+        <div class="finale__scrim" aria-hidden="true"></div>
         <span class="finale__badge">Mind Robotics · Акт I</span>
-        <div class="finale__logo"><b>Mind</b><span>G1</span></div>
+        <div class="finale__logo"><b>Mind</b><span>Apollo</span></div>
         <p class="finale__line"><span class="caps">Создан</span><em>чтобы мыслить</em></p>
-        <p class="finale__sub">От светового CAD-каркаса до кремниевого ядра. Продолжайте скролл — ниже открывается живой интерактивный 3D-разбор узлов.</p>
+        <p class="finale__sub">Apptronik Apollo от светового CAD-каркаса до кремниевого ядра. Продолжайте скролл — ниже открывается живой интерактивный 3D-разбор узлов.</p>
         <a class="finale__cta" href="#drive" id="finaleToLive">Открыть живой 3D-стенд ↓</a>
       </div>
     </div>
   </section>
 
+  <!-- Атмосферный световой переход между Актом I и Актом II (Flow beam, screen blend) -->
+  <div class="act-beam" id="actBeam" aria-hidden="true">
+    <video class="act-beam__video" id="actBeamVideo" muted playsinline preload="none" data-src="assets/video/scrub/transition_beam_scrub.mp4"></video>
+  </div>
+
   <!-- АКТ II: Живой real-time 3D-режим с пружинной взрыв-схемой по табам и выносками -->
-  <section id="drive" class="live-section" aria-label="Интерактивный 3D-разбор Unitree G1">
+  <section id="drive" class="live-section" aria-label="Интерактивный 3D-разбор Apptronik Apollo">
     <div class="live-pin" id="livePin">
-      <canvas id="stage" aria-label="Unitree G1, интерактивная 3D-модель"></canvas>
+      <canvas id="stage" aria-label="Apptronik Apollo, интерактивная 3D-модель"></canvas>
       <div id="vignette" aria-hidden="true"></div>
       <div id="grain" aria-hidden="true"></div>
 
@@ -92,8 +101,8 @@
         <aside class="call" id="c0" hidden></aside>
         <aside class="call" id="c1" hidden></aside>
         <aside class="call" id="c2" hidden></aside>
-        <h1 class="sr-only" id="headline">Unitree G1 — кинематографическая сборка и живая кинематика в масштабе 1,32 м</h1>
-        <p class="credit">Модель: Unitree G1, BSD-3-Clause, © Unitree Robotics, via MuJoCo Menagerie.</p>
+        <h1 class="sr-only" id="headline">Apptronik Apollo — кинематографическая сборка и живая кинематика в масштабе 1,73 м</h1>
+        <p class="credit">3D-модель: Apptronik Apollo (1,73 м, индустриальный профиль argo design, сборка Mind Studio).</p>
         <p class="coords" id="hud-coords">X 0.00 · Y 0.00 · Z 0.00</p>
       </div>
 
@@ -104,41 +113,49 @@
 
   <!-- АКТ III: Инженерный паспорт и первоисточники -->
   <article id="reading" class="reading">
-    <h2>Компактная кинематика без гидравлики</h2>
-    <p>Unitree G1 уводит гуманоидную платформу от тяжёлых двухметровых рам к плотной механике ростом 1,32 м и массой 35 кг. Меньшая инерция звеньев позволяет гасить толчки шагом, безопасно работать рядом с человеком и складывать робота в транспортный габарит 690 × 450 × 300 мм.</p>
+    <div class="reading__bg" aria-hidden="true">
+      <video class="reading__neural" id="readingNeuralVideo" muted loop playsinline preload="none" data-src="assets/video/scrub/bg_neural_loop_web.mp4"></video>
+      <div class="reading__scrim"></div>
+    </div>
+    <h2>Гуманоид промышленного масштаба 1,73 м</h2>
+    <p>Apptronik Apollo проектировался совместно с бюро argo design как универсальный помощник под человеческую эргономику: рост 1,73 м и масса 73 кг позволяют работать у стандартных стеллажей и конвейерных линий без перестройки цеха, поднимая до 25 кг полезной нагрузки.</p>
 
     <dl class="spec-grid">
-      <div class="spec-item"><dt>Рост в стойке</dt><dd>1,32 м</dd></div>
-      <div class="spec-item"><dt>Снаряжённая масса</dt><dd>35 кг</dd></div>
-      <div class="spec-item"><dt>Степени свободы</dt><dd>23–43 DOF</dd></div>
-      <div class="spec-item"><dt>Момент колена EDU</dt><dd>120 Н·м</dd></div>
-      <div class="spec-item"><dt>Скорость хода</dt><dd>2,0 м/с</dd></div>
-      <div class="spec-item"><dt>Аккумулятор 13S · 2 ч</dt><dd>9000 мА·ч</dd></div>
+      <div class="spec-item"><dt>Рост в стойке</dt><dd>1,73 м</dd></div>
+      <div class="spec-item"><dt>Снаряжённая масса</dt><dd>73 кг</dd></div>
+      <div class="spec-item"><dt>Полезная нагрузка</dt><dd>25 кг</dd></div>
+      <div class="spec-item"><dt>Активные оси</dt><dd>36 DOF</dd></div>
+      <div class="spec-item"><dt>Архитектура приводов</dt><dd>Linear</dd></div>
+      <div class="spec-item"><dt>Сменная батарея</dt><dd>4 ч · Swap</dd></div>
     </dl>
 
-    <h2>Купол восприятия на 360 градусов</h2>
-    <p>В голове стоят твердотельный 3D-лидар Livox Mid-360 и камера глубины Intel RealSense D435i. Лидар строит круговое облако точек помещения без слепых зон под ногами, а стереопара ведёт кисть в ближней зоне захвата. Два инерциальных модуля — в торсе и в тазовом узле — замыкают оценку равновесия на высокой частоте.</p>
+    <h2>Светлая лицевая панель, стереолинзы и OLED</h2>
+    <p>В гладком овальном шлеме утоплена светлая лицевая панель с двумя круглыми стереокамерами и компактной LED-полосой мимики речи. На груди встроен глянцевый OLED-экран телеметрии с центральной камерой обзора, ряд из четырёх датчиков ниже и маркировка APPTRONIK.</p>
 
-    <h2>Полый вал и трёхпалый схват Dex3-1</h2>
-    <p>Все силовые оси построены на синхронных электромоторах с постоянными магнитами (PMSM) и внутренней проводкой без внешних жгутов. В конфигурации G1 EDU коленный узел выдаёт до 120 Н·м пикового момента, а трёхпалые кисти Dex3-1 добавляют по 7 активных степеней свободы на каждую руку с гибридным контролем силы и положения.</p>
+    <h2>Линейные актуаторы школы NASA Valkyrie</h2>
+    <p>В отличие от гидравлики, Apollo опирается на собственные линейные и вращательные электрические актуаторы, выросшие из опыта команды Apptronik при создании NASA Valkyrie. Жемчужно-белый полимерный панцирь закрывает силовую раму и убирает точки защемления при совместной работе с людьми.</p>
 
-    <h2>Из симуляции сразу в железо</h2>
-    <p>Открытая MJCF-модель Unitree G1 в коллекции Google DeepMind MuJoCo Menagerie и среде MuJoCo Playground позволяет обучать политики ходьбы и манипуляции с прямым переносом на реальные приводы без ручной пересборки кинематического дерева.</p>
+    <h2>Сменный блок питания и модульный торс</h2>
+    <p>Аккумулятор вынесен в спинной быстросъёмный отсек: разряженный картридж меняется за секунды на 4-часовой цикл без остановки смены. Верхний торс с двумя руками может устанавливаться как на двуногое шасси с пятипалыми кистями, так и на автономную колёсную платформу.</p>
+
+    <div class="flow-inserts" id="flowInsertsSection" hidden>
+      <h2>Кинематографичные видеовставки</h2>
+      <p>Гибкие слоты для чистых сцен движения камеры и света по Apptronik Apollo поверх 3D-сборки — адаптируются к любому числу проверенных роликов.</p>
+      <div class="flow-grid" id="flowSlotsGrid"></div>
+    </div>
 
     <h2>Источники и лицензии</h2>
-    <p>3D-модель: Unitree G1 (BSD-3-Clause, © HangZhou YuShu Technology Co., Ltd. / Unitree Robotics), пакет MuJoCo Menagerie. Студийная карта освещения: Poly Haven studio_small_09 (CC0). Гарнитуры Inter Tight, Playfair Display, Geist и Geist Mono: SIL Open Font License 1.1.</p>
+    <p>3D-модель: Apptronik Apollo (процедурная CAD-реконструкция Mind Studio в масштабе 1,73 м по открытым инженерным материалам Apptronik и argo design). Студийное освещение: Poly Haven studio_small_09 (CC0). Гарнитуры Inter Tight, Playfair Display, Geist и Geist Mono: SIL OFL 1.1.</p>
     <ul>
-      <li><a href="https://www.unitree.com/g1/" target="_blank" rel="noopener">Unitree Robotics — официальный паспорт и спецификации G1 / G1 EDU</a></li>
-      <li><a href="https://www.unitree.com/dex3-1/" target="_blank" rel="noopener">Unitree Dex3-1 — трёхпалая силомоментная кисть (7 DOF)</a></li>
-      <li><a href="https://spectrum.ieee.org/unitree-g1" target="_blank" rel="noopener">IEEE Spectrum — разбор гуманоидной платформы Unitree G1</a></li>
-      <li><a href="https://github.com/google-deepmind/mujoco_menagerie/tree/main/unitree_g1" target="_blank" rel="noopener">Google DeepMind MuJoCo Menagerie — MJCF-описание и меши Unitree G1 (BSD-3-Clause)</a></li>
-      <li><a href="https://github.com/unitreerobotics/unitree_ros/tree/master/robots/g1_description" target="_blank" rel="noopener">Unitree ROS — заводская кинематическая схема g1_description</a></li>
-      <li><a href="https://arxiv.org/abs/2502.08844" target="_blank" rel="noopener">Zakka et al., MuJoCo Playground (arXiv:2502.08844) — sim-to-real на G1</a></li>
+      <li><a href="https://apptronik.com/apollo" target="_blank" rel="noopener">Apptronik — официальная страница и спецификации Apollo</a></li>
+      <li><a href="https://www.argodesign.com/work/apptronik.html" target="_blank" rel="noopener">argo design — промышленный дизайн и человеко-ориентированный образ Apollo</a></li>
+      <li><a href="https://spectrum.ieee.org/apptronik-apollo" target="_blank" rel="noopener">IEEE Spectrum — архитектура приводов и линейная механика Apptronik Apollo</a></li>
+      <li><a href="https://polyhaven.com/a/studio_small_09" target="_blank" rel="noopener">Poly Haven — студийная карта окружения studio_small_09 (CC0)</a></li>
     </ul>
   </article>
 
   <div class="preloader" id="preloader" aria-hidden="true">
-    <div class="preloader__brand"><b>Mind</b><span>Unitree G1</span></div>
+    <div class="preloader__brand"><b>Mind</b><span>Apollo</span></div>
     <div class="preloader__bar"><i id="preloaderBar"></i></div>
     <div class="preloader__pct" id="preloaderPct">0%</div>
   </div>

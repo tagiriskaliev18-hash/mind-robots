@@ -6,10 +6,12 @@ const gsap = window.gsap;
 const ScrollTrigger = window.ScrollTrigger;
 gsap.registerPlugin(ScrollTrigger);
 
+export const FLOW_CLIPS_ENABLED = false;
+
 export const STORY = {
   source: "frames",
   scrollLength: 6.8,
-  smoothing: { wheel: 11, touch: 8.5 },
+  smoothing: { wheel: 11, touch: 12 },
   maxFramesPerSecond: 260,
   blend: true,
   focus: { desktop: [0.50, 0.50], mobile: [0.50, 0.45] },
@@ -17,9 +19,9 @@ export const STORY = {
     desktop: { dir: "assets/frames/desktop/", count: 320, ext: "webp", pad: 4, w: 1280, h: 720 },
     mobile:  { dir: "assets/frames/mobile/",  count: 220, ext: "webp", pad: 4, w: 540,  h: 960 }
   },
-  video: { desktop: "assets/film-desktop.mp4", mobile: "assets/film-mobile.mp4", fps: 30 },
-  // Continuous 3D timeline mapping: scroll progress [0..1] -> rendered 3D assembly film [0..1]
-  // 1 wires (0-.115) -> 2 legs/frame (.115-.275) -> 3 arms (.275-.445) -> 4 head/bus (.445-.60) -> 5 hero (.60-.715) -> 6 visor bore (.715-.875) -> 7 core (.875-1.0)
+  videoManifest: "assets/video/manifest.json",
+  // Continuous 3D timeline mapping: scroll progress [0..1] -> rendered 3D Apptronik Apollo assembly [0..1]
+  // 1 wireframe (0-.115) -> 2 actuators (.115-.275) -> 3 shell (.275-.445) -> 4 visor/oled (.445-.60) -> 5 hero (.60-.715) -> 6 optics (.715-.875) -> 7 core (.875-1.0)
   timeKeys: [
     [0.00, 0.000],
     [0.13, 0.115],
@@ -36,92 +38,92 @@ export const STORY = {
       from: 0.00, to: 0.13,
       kicker: "ЭТАП 01 / 07",
       caps: "Чистый", serif: "замысел",
-      sub: "Световой CAD-чертёж в масштабе 1,32 м обретает опору на титановых стопах и тазовом узле.",
-      hint: "Собрать каркас"
+      sub: "Световой CAD-каркас Apptronik Apollo в масштабе 1,73 м задаёт геометрию и опору на пятиосевые стопы.",
+      hint: "Собрать хребет"
     },
     {
       from: 0.13, to: 0.26,
       kicker: "ЭТАП 02 / 07",
-      caps: "Несущий", serif: "скелет",
-      sub: "Фрезерованный алюминий и карбон замыкают силовую раму без единого гидравлического контура.",
-      hint: "Встроить приводы"
+      caps: "Силовой", serif: "хребет",
+      sub: "Линейные электроактуаторы из школы NASA Valkyrie формируют несущий скелет без капли гидравлики.",
+      hint: "Закрыть панцирь"
     },
     {
       from: 0.26, to: 0.39,
       kicker: "ЭТАП 03 / 07",
-      caps: "Сила", serif: "в суставах",
-      sub: "Синхронные электромоторы PMSM и батарея 9000 мА·ч встают в открытые узлы шасси.",
-      hint: "Протянуть нервы"
+      caps: "Жемчужный", serif: "панцирь",
+      sub: "Индустриальный профиль argo design закрывает кинематику и защищает схват до 25 кг полезной нагрузки.",
+      hint: "Открыть визор"
     },
     {
       from: 0.39, to: 0.52,
       kicker: "ЭТАП 04 / 07",
-      caps: "Нервная", serif: "сеть",
-      sub: "Оптоволоконные шины связывают 43 оси движения с центральным контроллером равновесия.",
-      hint: "Замкнуть облик"
+      caps: "Панель", serif: "и сигнал",
+      sub: "Светлая лицевая панель, стереолинзы, LED-индикатор речи и нагрудный OLED-дисплей APPTRONIK переводят состояние робота оператору.",
+      hint: "Зажечь контур"
     },
     {
       from: 0.52, to: 0.66,
       kicker: "ЭТАП 05 / 07",
-      caps: "Облик", serif: "в сборе",
-      sub: "Матовый защитный кожух и тёмный визор закрывают корпус массой 35 кг — робот готов к шагу.",
+      caps: "Смена", serif: "за 4 часа",
+      sub: "Спинной съёмный аккумулятор с боковыми камерами и 36 активных осей собраны в корпус массой 73 кг.",
       hint: "Сквозь визор"
     },
     {
       from: 0.66, to: 0.80,
       kicker: "АКТ I · ОПТИКА",
       caps: "Сквозь", serif: "оптику",
-      sub: "Камера проходит за стекло визора к стереопаре глубины и твердотельному 3D-лидару.",
+      sub: "Камера проходит через тёмную стереолинзу глубины внутрь оптического и инерциального контура.",
       hint: "Войти в ядро"
     },
     {
       from: 0.80, to: 0.93,
       kicker: "АКТ I · ЯДРО",
       caps: "Разум", serif: "в движении",
-      sub: "Вычислительный модуль объединяет зрение и моторику в единую петлю частотой 1 кГц.",
+      sub: "Вычислительное ядро объединяет зрение и линейные приводы в реальном времени.",
       hint: ""
     }
   ],
   finale: { from: 0.93, to: 0.985 },
   callouts: [
     {
-      label: "CAD · 1,32 м",
+      label: "CAD · 1,73 м",
       show: [0.015, 0.12],
       keys: {
-        desktop: [[0, 0.48, 0.20], [38, 0.49, 0.24], [319, 0.49, 0.24]],
-        mobile:  [[0, 0.54, 0.20], [24, 0.54, 0.22], [219, 0.54, 0.22]]
+        desktop: [[0, 0.48, 0.24], [38, 0.48, 0.30], [319, 0.48, 0.30]],
+        mobile:  [[0, 0.48, 0.23], [24, 0.48, 0.25], [219, 0.48, 0.25]]
       }
     },
     {
-      label: "Рама Al-7075",
+      label: "Linear · Valkyrie",
       show: [0.15, 0.245],
       keys: {
-        desktop: [[38, 0.51, 0.46], [85, 0.50, 0.46], [319, 0.50, 0.46]],
-        mobile:  [[24, 0.51, 0.38], [57, 0.50, 0.36], [219, 0.50, 0.36]]
+        desktop: [[38, 0.50, 0.49], [85, 0.50, 0.47], [319, 0.50, 0.47]],
+        mobile:  [[24, 0.49, 0.42], [57, 0.49, 0.40], [219, 0.49, 0.40]]
       }
     },
     {
-      label: "PMSM · 120 Н·м",
+      label: "Схват · 25 кг",
       show: [0.28, 0.375],
       keys: {
-        desktop: [[88, 0.38, 0.44], [137, 0.37, 0.41], [319, 0.37, 0.41]],
-        mobile:  [[59, 0.28, 0.43], [96, 0.27, 0.40], [219, 0.27, 0.40]]
+        desktop: [[88, 0.43, 0.50], [137, 0.44, 0.48], [319, 0.44, 0.48]],
+        mobile:  [[59, 0.44, 0.48], [96, 0.45, 0.47], [219, 0.45, 0.47]]
       }
     },
     {
-      label: "Шина 1 кГц",
+      label: "OLED + E-Ink",
       show: [0.41, 0.505],
       keys: {
-        desktop: [[140, 0.49, 0.44], [186, 0.50, 0.45], [319, 0.50, 0.45]],
-        mobile:  [[98, 0.50, 0.34], [128, 0.50, 0.35], [219, 0.50, 0.35]]
+        desktop: [[140, 0.50, 0.40], [186, 0.50, 0.42], [319, 0.50, 0.42]],
+        mobile:  [[98, 0.48, 0.38], [128, 0.48, 0.40], [219, 0.48, 0.40]]
       }
     },
     {
-      label: "3D-лидар 360°",
+      label: "Стереовизор 360°",
       show: [0.68, 0.785],
       keys: {
-        desktop: [[229, 0.50, 0.40], [275, 0.50, 0.48], [319, 0.50, 0.48]],
-        mobile:  [[158, 0.50, 0.36], [190, 0.50, 0.47], [219, 0.50, 0.47]]
+        desktop: [[229, 0.50, 0.38], [275, 0.50, 0.44], [319, 0.50, 0.44]],
+        mobile:  [[158, 0.48, 0.36], [190, 0.48, 0.42], [219, 0.48, 0.42]]
       }
     }
   ],
@@ -137,7 +139,13 @@ const stageEl = $("#storyStage");
 const mediaEl = $("#media");
 const canvas = $("#film");
 const poster = $("#poster");
-const videoEl = $("#filmVideo");
+const videoElA = $("#filmVideo");
+const videoElB = $("#filmVideoB");
+const flowSlotEl = $("#flowSlot");
+const finaleNeuralEl = $("#finaleNeuralVideo");
+const readingNeuralEl = $("#readingNeuralVideo");
+const actBeamEl = $("#actBeam");
+const actBeamVideoEl = $("#actBeamVideo");
 const fxCanvas = $("#fx");
 const fx = fxCanvas.getContext("2d");
 
@@ -159,7 +167,7 @@ function createFilmRenderer(cvs) {
         ctx2d.imageSmoothingEnabled = true;
         ctx2d.imageSmoothingQuality = "medium";
       },
-      draw(entryA, entryB, mix, vw) {
+      draw(entryA, entryB, mix, vw, _zoom = 1, _transMode = 0) {
         const d = vw.dpr;
         ctx2d.globalAlpha = 1;
         ctx2d.drawImage(entryA.src, vw.dx * d, vw.dy * d, vw.dw * d, vw.dh * d);
@@ -168,7 +176,9 @@ function createFilmRenderer(cvs) {
           ctx2d.drawImage(entryB.src, vw.dx * d, vw.dy * d, vw.dw * d, vw.dh * d);
         }
         ctx2d.globalAlpha = 1;
-      }
+      },
+      invalidate() {},
+      resetCache() {}
     };
   }
 
@@ -194,15 +204,40 @@ function createFilmRenderer(cvs) {
     uniform sampler2D u_texB;
     uniform float u_mix;
     uniform float u_zoom;
+    uniform float u_transMode;
     uniform vec2 u_scale;
     uniform vec2 u_offset;
     out vec4 outColor;
     void main() {
-      vec2 zuv = (v_uv - 0.5) / max(0.85, u_zoom) + 0.5;
-      vec2 tuv = zuv * u_scale + u_offset;
-      vec4 col = texture(u_texA, tuv);
-      if (u_mix > 0.01) {
-        col = mix(col, texture(u_texB, tuv), u_mix);
+      float m = clamp(u_mix, 0.0, 1.0);
+      float sMix = m * m * (3.0 - 2.0 * m);
+      float zoomA = max(0.85, u_zoom) + (u_transMode > 0.5 ? sMix * 0.020 : 0.0);
+      vec2 tuvA = ((v_uv - 0.5) / zoomA + 0.5) * u_scale + u_offset;
+      vec4 col = texture(u_texA, tuvA);
+      if (m > 0.005) {
+        float zoomB = max(0.85, u_zoom) + (u_transMode > 0.5 ? (1.0 - sMix) * 0.034 : 0.0);
+        vec2 tuvB = ((v_uv - 0.5) / zoomB + 0.5) * u_scale + u_offset;
+        vec4 colB = texture(u_texB, tuvB);
+        float w = sMix;
+        float rim = 0.0;
+        if (u_transMode > 1.5) {
+          float dist = length((v_uv - vec2(0.5, 0.46)) * vec2(1.18, 1.0));
+          float edge = mix(-0.18, 1.06, sMix);
+          float feather = 0.24;
+          float iris = 1.0 - smoothstep(edge - feather, edge + feather, dist);
+          w = mix(sMix, iris, 0.86);
+          rim = exp(-pow((dist - edge) * 7.5, 2.0)) * sin(sMix * 3.14159265);
+        } else if (u_transMode > 0.5) {
+          float diag = v_uv.x * 0.72 + (1.0 - v_uv.y) * 0.42;
+          float edge = mix(-0.22, 1.36, sMix);
+          float feather = 0.26;
+          float wipe = 1.0 - smoothstep(edge - feather, edge + feather, diag);
+          w = mix(sMix, wipe, 0.85);
+          rim = exp(-pow((diag - edge) * 7.0, 2.0)) * sin(sMix * 3.14159265);
+        }
+        col = mix(col, colB, clamp(w, 0.0, 1.0));
+        vec3 mindRim = mix(vec3(0.0, 0.96, 1.0), vec3(0.29, 0.23, 1.0), 0.38);
+        col.rgb += mindRim * (rim * 0.16);
       }
       vec2 d = v_uv - 0.5;
       float vig = 1.0 - smoothstep(0.42, 0.92, dot(d, d) * 1.45) * 0.34;
@@ -236,6 +271,7 @@ function createFilmRenderer(cvs) {
   gl.uniform1i(gl.getUniformLocation(prog, "u_texB"), 1);
   const uMix = gl.getUniformLocation(prog, "u_mix");
   const uZoom = gl.getUniformLocation(prog, "u_zoom");
+  const uTransMode = gl.getUniformLocation(prog, "u_transMode");
   const uScale = gl.getUniformLocation(prog, "u_scale");
   const uOffset = gl.getUniformLocation(prog, "u_offset");
 
@@ -246,7 +282,15 @@ function createFilmRenderer(cvs) {
   return {
     isGL: true,
     setSmoothing() {},
-    draw(entryA, entryB, mix, vw, zoom = 1) {
+    invalidate(id) {
+      if (idA === id) { idA = -1; genA = -1; }
+      if (idB === id) { idB = -1; genB = -1; }
+    },
+    resetCache() {
+      idA = -1; genA = -1; wA = 0; hA = 0;
+      idB = -1; genB = -1; wB = 0; hB = 0;
+    },
+    draw(entryA, entryB, mix, vw, zoom = 1, transMode = 0) {
       gl.viewport(0, 0, cvs.width, cvs.height);
       const sx = vw.cw / (vw.dw || 1);
       const sy = vw.ch / (vw.dh || 1);
@@ -255,6 +299,7 @@ function createFilmRenderer(cvs) {
       gl.uniform2f(uScale, sx, sy);
       gl.uniform2f(uOffset, ox, oy);
       gl.uniform1f(uZoom, zoom);
+      gl.uniform1f(uTransMode, transMode);
       if (entryA.id !== idA || entryA.gen !== genA) {
         const s = entryA.src;
         const sw = s.width || s.videoWidth || 0;
@@ -270,7 +315,7 @@ function createFilmRenderer(cvs) {
         idA = entryA.id;
         genA = entryA.gen;
       }
-      if (entryB && mix > 0.015) {
+      if (entryB && mix > 0.005) {
         if (entryB.id !== idB || entryB.gen !== genB) {
           const s = entryB.src;
           const sw = s.width || s.videoWidth || 0;
@@ -345,14 +390,14 @@ const store = {
     }
     return -1;
   },
-  nearestBelow(i, maxDist = 18) {
+  nearestBelow(i, maxDist = SET.count) {
     for (let d = 0; d <= maxDist; d++) {
       const k = i - d;
       if (k >= 0 && this.lru.has(k)) return k;
     }
     return -1;
   },
-  nearestAbove(i, maxDist = 18) {
+  nearestAbove(i, maxDist = SET.count) {
     for (let d = 0; d <= maxDist; d++) {
       const k = i + d;
       if (k < SET.count && this.lru.has(k)) return k;
@@ -361,11 +406,21 @@ const store = {
   }
 };
 
+const decodeWaiters = new Map();
+
+function settleDecodeWaiter(i, ok) {
+  const arr = decodeWaiters.get(i);
+  if (!arr) return;
+  decodeWaiters.delete(i);
+  for (const resolve of arr) resolve(ok);
+}
+
 function putLru(i, entry) {
   if (store.lru.has(i)) {
     const prev = store.lru.get(i);
     if (prev.isBmp) try { prev.src.close(); } catch {}
     store.lru.delete(i);
+    filmRenderer.invalidate(i);
   }
   store.lru.set(i, entry);
   while (store.lru.size > MAX_DECODED) {
@@ -379,6 +434,7 @@ function putLru(i, entry) {
     if (worstKey < 0) break;
     const old = store.lru.get(worstKey);
     store.lru.delete(worstKey);
+    filmRenderer.invalidate(worstKey);
     if (old?.isBmp) try { old.src.close(); } catch {}
   }
 }
@@ -449,10 +505,13 @@ function pumpDecodeQueue() {
     if (best < 0) break;
     decodeQueue.delete(best);
     activeDecodes++;
-    decodeToLru(best).finally(() => {
-      activeDecodes--;
-      pumpDecodeQueue();
-    });
+    decodeToLru(best)
+      .then(() => settleDecodeWaiter(best, store.lru.has(best)))
+      .catch(() => settleDecodeWaiter(best, false))
+      .finally(() => {
+        activeDecodes--;
+        pumpDecodeQueue();
+      });
   }
 }
 
@@ -460,6 +519,18 @@ function requestDecode(i) {
   if (i < 0 || i >= SET.count || !store.blobs[i] || store.lru.has(i) || store.decoding.has(i)) return;
   decodeQueue.add(i);
   pumpDecodeQueue();
+}
+
+function requestDecodeAsync(i) {
+  if (i < 0 || i >= SET.count || !store.blobs[i]) return Promise.resolve(false);
+  if (store.lru.has(i)) return Promise.resolve(true);
+  return new Promise((resolve) => {
+    const list = decodeWaiters.get(i) || [];
+    list.push(resolve);
+    decodeWaiters.set(i, list);
+    decodeQueue.add(i);
+    pumpDecodeQueue();
+  });
 }
 
 function prefetchWindow(center, dir = 1) {
@@ -547,10 +618,10 @@ async function preloadFrames(onProgress) {
   const gate = passes[0].concat(passes[1]);
   let n = 0;
   await runPool(gate, 6, async (i) => {
-    await decodeToLru(i);
+    await requestDecodeAsync(i);
     onProgress(++n / gate.length);
   });
-  // Загружаем все WebP-блоки в память и прогреваем начало + опорные кадры pass[2] без блокировки скролла
+  // Загружаем оставшиеся WebP-блоки и прогреваем начало + опорные кадры pass[2] через общую очередь декода
   (async () => {
     await runPool(Array.from({ length: Math.min(28, SET.count) }, (_, k) => k), 6, (i) => {
       if (i < 24) requestDecode(i);
@@ -584,36 +655,369 @@ function resize() {
   view.dh = SET.h * sc;
   view.dx = (view.cw - view.dw) * fxF;
   view.dy = (view.ch - view.dh) * fyF;
-  if (videoEl) videoEl.style.objectPosition = `${fxF * 100}% ${fyF * 100}%`;
+  if (videoElA) videoElA.style.objectPosition = `${fxF * 100}% ${fyF * 100}%`;
+  if (videoElB) videoElB.style.objectPosition = `${fxF * 100}% ${fyF * 100}%`;
   fxCanvas.width = Math.max(1, Math.round(s.width));
   fxCanvas.height = Math.max(1, Math.round(s.height));
   fx.setTransform(1, 0, 0, 1, 0, 0);
   filmRenderer.setSmoothing();
+  if (typeof flow !== "undefined") {
+    flow.lastDrawSig = "";
+    flow.activeBox = null;
+  }
   dirty = true;
 }
 
-let lastDrawn = -1;
-function renderFrames(f, speedZoom = 1) {
-  if (!dirty && Math.abs(f - lastDrawn) < 0.002) return;
+/* ---------- Google Flow VideoScrubEngine (All-Intra MP4, zero-abort buffered per-stage pool) ---------- */
+const VIDEO_IDS = Array.from({ length: 8 }, (_, i) => -(i + 2));
+const canPlayH264 = (() => {
+  try {
+    const v = document.createElement("video");
+    return Boolean(v.canPlayType && (v.canPlayType('video/mp4; codecs="avc1.4D401F"') || v.canPlayType('video/mp4; codecs="avc1.42E01E"')));
+  } catch {
+    return false;
+  }
+})();
+
+function isSlotFullyBuffered(slot) {
+  const el = slot?.el;
+  if (!el || el.readyState < 2 || el.videoWidth <= 0 || !el.buffered || el.buffered.length === 0) return false;
+  const dur = Number.isFinite(el.duration) && el.duration > 0 ? el.duration : (flow.clips[slot.stageIdx]?.durationSec || 8);
+  const bEnd = el.buffered.end(el.buffered.length - 1);
+  return el.buffered.start(0) <= 0.15 && bEnd >= Math.max(0.5, dur - 0.15);
+}
+
+function createStageVideoEl(idx) {
+  if (idx === 0 && videoElA) return videoElA;
+  if (idx === 1 && videoElB) return videoElB;
+  const v = document.createElement("video");
+  v.className = "story-stage__video";
+  v.muted = true;
+  v.playsInline = true;
+  v.preload = "auto";
+  v.setAttribute("aria-hidden", "true");
+  mediaEl.appendChild(v);
+  return v;
+}
+
+function createVideoSlot(idx) {
+  const el = createStageVideoEl(idx);
+  if (!el) return null;
+  el.muted = true;
+  el.playsInline = true;
+  const slot = {
+    el,
+    entry: { id: VIDEO_IDS[idx] ?? -(idx + 2), gen: 0, src: el },
+    stageIdx: idx,
+    bound: false,
+    failed: false,
+    pendingTarget: null,
+    readyWaiters: []
+  };
+  const resolveWaiters = (ok) => {
+    if (!slot.readyWaiters.length) return;
+    const list = slot.readyWaiters.splice(0, slot.readyWaiters.length);
+    for (const fn of list) fn(ok);
+  };
+  const flushSeekOrResolve = () => {
+    if (isSlotFullyBuffered(slot)) {
+      if (slot.pendingTarget !== null && !el.seeking) {
+        const t = slot.pendingTarget;
+        slot.pendingTarget = null;
+        if (Math.abs((el.currentTime || 0) - t) > 0.015) {
+          el.currentTime = t;
+          return;
+        }
+      }
+      if (!el.seeking) {
+        slot.entry.gen++;
+        flow.lastGoodSlot = slot;
+        dirty = true;
+        resolveWaiters(true);
+      }
+    }
+  };
+  el.addEventListener("loadeddata", flushSeekOrResolve);
+  el.addEventListener("canplaythrough", flushSeekOrResolve);
+  el.addEventListener("progress", flushSeekOrResolve);
+  el.addEventListener("suspend", flushSeekOrResolve);
+  el.addEventListener("seeked", () => {
+    slot.entry.gen++;
+    flow.lastGoodSlot = slot;
+    dirty = true;
+    if (slot.pendingTarget !== null && !el.seeking && isSlotFullyBuffered(slot)) {
+      const t = slot.pendingTarget;
+      slot.pendingTarget = null;
+      if (Math.abs((el.currentTime || 0) - t) > 0.015) {
+        el.currentTime = t;
+        return;
+      }
+    }
+    if (el.readyState >= 2 && el.videoWidth > 0) resolveWaiters(true);
+  });
+  el.addEventListener("error", () => {
+    slot.failed = true;
+    resolveWaiters(false);
+  });
+  if (typeof el.requestVideoFrameCallback === "function") {
+    const onFrame = () => {
+      slot.entry.gen++;
+      flow.lastGoodSlot = slot;
+      dirty = true;
+      el.requestVideoFrameCallback(onFrame);
+    };
+    el.requestVideoFrameCallback(onFrame);
+  }
+  return slot;
+}
+
+const flow = {
+  manifest: null,
+  hasClips: false,
+  transW: 0.032,
+  clips: [],
+  activeStage: -1,
+  activeBox: null,
+  lastGoodSlot: null,
+  lastDrawSig: "",
+  slots: []
+};
+
+function fitVideoBox(vwSrc, vhSrc) {
+  const [fxF, fyF] = STORY.focus[setName];
+  const w = vwSrc || 1280;
+  const h = vhSrc || 720;
+  const sc = Math.max(view.cw / w, view.ch / h);
+  const dw = w * sc;
+  const dh = h * sc;
+  return { cw: view.cw, ch: view.ch, dpr: view.dpr, dw, dh, dx: (view.cw - dw) * fxF, dy: (view.ch - dh) * fyF };
+}
+
+function validDur(el, fallback = 8) {
+  return Number.isFinite(el?.duration) && el.duration > 0 ? el.duration : fallback;
+}
+
+function stageStartSec(idx) {
+  const stg = STORY.stages[idx];
+  const clip = flow.clips[idx];
+  const dur = clip?.durationSec || 8;
+  return stg?.reverse ? Math.max(0.04, dur - 0.06) : 0.02;
+}
+
+function seekSlotTo(slot, targetSec) {
+  if (!slot || !slot.bound || slot.failed) return;
+  const el = slot.el;
+  const clip = flow.clips[slot.stageIdx];
+  const dur = validDur(el, clip?.durationSec || 8);
+  const clamped = clamp(targetSec, 0.02, Math.max(0.04, dur - 0.04));
+  slot.pendingTarget = clamped;
+  // Wait until full MP4 is buffered in RAM before calling currentTime — guarantees 0 aborted HTTP streams!
+  if (!isSlotFullyBuffered(slot)) return;
+  if (!el.seeking && Math.abs((el.currentTime || 0) - clamped) > 0.015) {
+    el.currentTime = clamped;
+    slot.pendingTarget = null;
+  } else if (!el.seeking) {
+    slot.pendingTarget = null;
+  }
+}
+
+function ensureStageSlot(idx, initSec = stageStartSec(idx)) {
+  if (idx < 0 || idx >= flow.clips.length) return null;
+  const clip = flow.clips[idx];
+  if (!clip?.available) return null;
+  let slot = flow.slots[idx];
+  if (!slot) {
+    slot = createVideoSlot(idx);
+    flow.slots[idx] = slot;
+  }
+  slot.pendingTarget = initSec;
+  if (!slot.bound) {
+    slot.bound = true;
+    slot.failed = false;
+    slot.el.dataset.src = clip.file;
+    slot.el.src = clip.file;
+    slot.el.load();
+  }
+  return slot;
+}
+
+function waitSlotReady(idx, timeoutMs = 2500) {
+  if (!canPlayH264) return Promise.resolve(false);
+  const wantSec = stageStartSec(idx);
+  const slot = ensureStageSlot(idx, wantSec);
+  if (!slot || slot.failed) return Promise.resolve(false);
+  if (isSlotFullyBuffered(slot) && Math.abs((slot.el.currentTime || 0) - wantSec) < 0.2) {
+    return Promise.resolve(true);
+  }
+  return new Promise((resolve) => {
+    let done = false;
+    const finish = (ok) => {
+      if (done) return;
+      done = true;
+      resolve(ok);
+    };
+    slot.readyWaiters.push(finish);
+    setTimeout(() => finish(isSlotFullyBuffered(slot)), timeoutMs);
+  });
+}
+
+async function initFlowManifest() {
+  const insertsSection = $("#flowInsertsSection");
+  const slotsGrid = $("#flowSlotsGrid");
+  if (flowSlotEl) flowSlotEl.hidden = true;
+  if (insertsSection) insertsSection.hidden = true;
+  if (!FLOW_CLIPS_ENABLED || !STORY.videoManifest) {
+    flow.hasClips = false;
+    flow.clips = [];
+    return;
+  }
+  try {
+    const res = await fetch(STORY.videoManifest, { cache: "no-store" });
+    if (!res.ok) return;
+    const data = await res.json();
+    flow.manifest = data;
+    flow.transW = Number(data.crossfadeWidth) || 0.028;
+    const activeVideoMode = Boolean(canPlayH264 && data.enabled !== false && data.mode !== "placeholder" && data.mode !== "disabled");
+    const rawList = Array.isArray(data?.inserts) ? data.inserts : (Array.isArray(data?.clips) ? data.clips : []);
+    const activeRaw = rawList.filter((c) => {
+      const useMobile = setName === "mobile" && c.mobileAvailable && c.mobile;
+      return activeVideoMode && (useMobile ? Boolean(c.mobileAvailable && c.mobile) : Boolean(c.available && c.desktop));
+    });
+    const count = activeRaw.length;
+    flow.clips = activeRaw.map((c, idx) => {
+      const useMobile = setName === "mobile" && c.mobileAvailable && c.mobile;
+      const file = useMobile ? c.mobile : c.desktop;
+      const span = 0.80 / Math.max(1, count);
+      const from = Number.isFinite(c.from) ? c.from : Number((0.06 + idx * span).toFixed(3));
+      const to = Number.isFinite(c.to) ? c.to : Number((from + Math.min(0.16, span * 0.82)).toFixed(3));
+      return {
+        id: c.id || `insert_${idx + 1}`,
+        title: c.title || c.id || `Вставка ${idx + 1}`,
+        file,
+        from,
+        to,
+        reverse: Boolean(c.reverse),
+        transition: Number(c.transition) || (idx % 2 === 0 ? 1 : 2),
+        durationSec: Number(c.durationSec) || 8,
+        resolution: useMobile ? (c.mobileResolution || "854x480") : (c.resolution || "1280x720"),
+        available: true
+      };
+    });
+    flow.hasClips = flow.clips.length > 0;
+    if (slotsGrid && insertsSection) {
+      slotsGrid.innerHTML = flow.clips.map((c, idx) => (
+        `<div class="flow-card is-ready"><b>${String(idx + 1).padStart(2, "0")}</b><span>${c.id}</span><em>${c.resolution} · ${c.title}</em></div>`
+      )).join("");
+      insertsSection.hidden = !flow.hasClips;
+    }
+  } catch {
+    // Без manifest/mp4 бесшовно работаем на 3D WebP-секвенции
+  }
+}
+
+function resolveFrameEntries(f) {
   const a = clamp(Math.floor(f), 0, SET.count - 1);
   const b = Math.min(SET.count - 1, Math.ceil(f));
-  prefetchWindow(Math.round(f), f >= lastDrawn ? 1 : -1);
-  const lo = store.nearestBelow(a, 18);
-  const hi = store.nearestAbove(b, 18);
+  const lo = store.nearestBelow(a, SET.count);
+  const hi = store.nearestAbove(b, SET.count);
   let entryA = lo >= 0 ? store.lru.get(lo) : null;
   let entryB = hi >= 0 ? store.lru.get(hi) : null;
   let mix = 0;
   if (entryA && entryB && hi > lo) {
     mix = clamp((f - lo) / (hi - lo), 0, 1);
+  } else if (entryA && !entryB) {
+    mix = 0;
+  } else if (!entryA && entryB) {
+    entryA = entryB;
+    entryB = null;
+    mix = 0;
   } else {
     const closest = store.nearestDecoded(Math.round(f));
-    if (closest < 0) return;
+    if (closest < 0) return null;
     entryA = store.lru.get(closest);
     entryB = null;
     mix = 0;
   }
-  if (!entryA) return;
-  filmRenderer.draw(entryA, STORY.blend ? entryB : null, STORY.blend && mix > 0.015 ? mix : 0, view, speedZoom);
+  return entryA ? { entryA, entryB, mix } : null;
+}
+
+function findActiveInsert(p) {
+  for (let i = 0; i < flow.clips.length; i++) {
+    const c = flow.clips[i];
+    if (p >= c.from && p <= c.to) return i;
+  }
+  return -1;
+}
+
+function tryRenderFlowVideo(p, f, speedZoom) {
+  if (!FLOW_CLIPS_ENABLED || !flow.hasClips) return null;
+  const activeIdx = findActiveInsert(p);
+  flow.activeStage = activeIdx;
+  if (activeIdx < 0) {
+    flow.activeBox = null;
+    const aheadIdx = flow.clips.findIndex((c) => p >= c.from - 0.08 && p < c.from);
+    if (aheadIdx >= 0) ensureStageSlot(aheadIdx, flow.clips[aheadIdx].reverse ? (flow.clips[aheadIdx].durationSec - 0.06) : 0.02);
+    return null;
+  }
+
+  const clipA = flow.clips[activeIdx];
+  const localU = clamp((p - clipA.from) / (clipA.to - clipA.from || 1), 0, 1);
+  const uEffA = clipA.reverse ? 1 - localU : localU;
+  const slotA = ensureStageSlot(activeIdx, uEffA * Math.max(0.04, clipA.durationSec - 0.06));
+  if (!slotA) return null;
+
+  const durA = validDur(slotA.el, clipA.durationSec);
+  seekSlotTo(slotA, 0.02 + uEffA * Math.max(0.04, durA - 0.06));
+
+  if (activeIdx + 1 < flow.clips.length && localU > 0.35) {
+    const nxt = flow.clips[activeIdx + 1];
+    ensureStageSlot(activeIdx + 1, nxt.reverse ? Math.max(0.04, nxt.durationSec - 0.06) : 0.02);
+  }
+  if (!isSlotFullyBuffered(slotA)) return null;
+
+  const tw = Math.min(flow.transW, (clipA.to - clipA.from) * 0.25);
+  let entryB = null;
+  let mix = 0;
+  let transMode = 0;
+  if (tw > 0.002) {
+    if (p < clipA.from + tw) {
+      const bg = resolveFrameEntries(f);
+      if (bg) {
+        entryB = bg.entryA;
+        mix = 1 - clamp((p - clipA.from) / tw, 0, 1);
+        transMode = clipA.transition || 1;
+      }
+    } else if (p > clipA.to - tw) {
+      const bg = resolveFrameEntries(f);
+      if (bg) {
+        entryB = bg.entryA;
+        mix = clamp((p - (clipA.to - tw)) / tw, 0, 1);
+        transMode = clipA.transition || 1;
+      }
+    }
+  }
+
+  const vw = fitVideoBox(slotA.el.videoWidth, slotA.el.videoHeight);
+  flow.activeBox = vw;
+  const sig = `${slotA.entry.id}:${slotA.entry.gen}:${entryB ? `${entryB.id}:${entryB.gen}` : -1}:${mix.toFixed(3)}:${speedZoom.toFixed(4)}:${transMode}:${vw.cw}:${vw.ch}`;
+  if (!dirty && sig === flow.lastDrawSig) return clipA;
+  flow.lastDrawSig = sig;
+  filmRenderer.draw(slotA.entry, entryB, mix, vw, speedZoom, transMode);
+  return clipA;
+}
+
+let lastDrawn = -1;
+function renderFrames(f, speedZoom = 1, p = current) {
+  prefetchWindow(Math.round(f), f >= lastDrawn ? 1 : -1);
+  if (tryRenderFlowVideo(p, f, speedZoom)) {
+    lastDrawn = f;
+    dirty = false;
+    return;
+  }
+  if (!dirty && Math.abs(f - lastDrawn) < 0.002) return;
+  const res = resolveFrameEntries(f);
+  if (!res) return;
+  filmRenderer.draw(res.entryA, STORY.blend ? res.entryB : null, STORY.blend && res.mix > 0.015 ? res.mix : 0, view, speedZoom);
   lastDrawn = f;
   dirty = false;
 }
@@ -655,47 +1059,63 @@ const callouts = STORY.callouts.map((c) => {
 
 let active = -1;
 let hintText = null;
-const copyHidden = new Uint8Array(STORY.stages.length);
+let flowBadgeKey = "";
 const calloutHidden = new Uint8Array(STORY.callouts.length);
 let lastFinaleO = -1;
 
-function updateUI(p, f) {
-  STORY.stages.forEach((s, i) => {
-    const len = s.to - s.from;
-    const fade = Math.min(0.28 * len, 0.036);
-    let o = 0;
-    let y = 22;
-    if (p >= s.from && p <= s.to) {
-      const inU = s.from === 0 ? 1 : clamp((p - s.from) / fade, 0, 1);
-      const outU = clamp((s.to - p) / fade, 0, 1);
-      if (inU < 1) {
-        const e = easeOut(inU);
-        o = e;
-        y = 22 * (1 - e);
-      } else if (outU < 1) {
-        const e = easeOut(outU);
-        o = e;
-        y = -26 * (1 - e);
-      } else {
-        o = 1;
-        y = 0;
-      }
-    }
-    const vis = o > 0.001;
-    if (!vis && copyHidden[i]) return;
-    copyHidden[i] = vis ? 0 : 1;
-    if (reduced) y = 0;
-    const el = copyItems[i];
-    el.classList.toggle("is-shown", vis);
-    el.style.opacity = vis ? o.toFixed(3) : "0";
-    if (vis) {
-      el.style.transform = `translate3d(0, ${y.toFixed(2)}px, 0)`;
-    }
-    el.style.visibility = vis ? "visible" : "hidden";
-  });
+// GSAP timeline for Act I stage typography (0..1 normalized, stagger kicker -> title -> sub, wide crossfade, zero scale)
+const copyTL = gsap.timeline({ paused: true });
+copyItems.forEach((el, i) => {
+  const s = STORY.stages[i];
+  const kids = [
+    el.querySelector(".copy__kicker"),
+    el.querySelector(".copy__title"),
+    el.querySelector(".copy__sub")
+  ].filter(Boolean);
+  if (i === 0) {
+    gsap.set(el, { autoAlpha: 1, y: 0 });
+    gsap.set(kids, { opacity: 1, y: 0 });
+  } else {
+    gsap.set(el, { autoAlpha: 0, y: 20 });
+    gsap.set(kids, { opacity: 0, y: 12 });
+    const tIn = Math.max(0, s.from - 0.010);
+    copyTL.to(el, { autoAlpha: 1, y: 0, duration: 0.026, ease: "power2.out" }, tIn);
+    copyTL.to(kids, { opacity: 1, y: 0, duration: 0.028, stagger: 0.006, ease: "power2.out" }, tIn);
+  }
+  const tOut = Math.max(0.01, s.to - 0.018);
+  copyTL.to(el, { autoAlpha: 0, y: -22, duration: 0.030, ease: "power2.in" }, tOut);
+});
+copyTL.set({}, {}, 1);
+copyTL.progress(0);
 
+function updateFlowBadge(insertClip) {
+  if (!flowSlotEl) return;
+  const videoActive = Boolean(FLOW_CLIPS_ENABLED && insertClip);
+  const key = videoActive ? `${insertClip.id}:1` : "0";
+  if (key === flowBadgeKey) return;
+  flowBadgeKey = key;
+  flowSlotEl.hidden = !videoActive;
+  flowSlotEl.classList.toggle("is-video", videoActive);
+  if (videoActive) {
+    flowSlotEl.textContent = `FLOW · ${insertClip.id} · ${insertClip.resolution || "720p"}`;
+  }
+}
+
+function updateUI(p, f) {
   let a = STORY.stages.findIndex((s) => p >= s.from && p < s.to);
   if (a < 0) a = STORY.stages.length - 1;
+
+  if (reduced) {
+    copyItems.forEach((el, i) => {
+      const show = i === a && p < STORY.finale.to;
+      el.style.visibility = show ? "visible" : "hidden";
+      el.style.opacity = show ? "1" : "0";
+      el.style.transform = "none";
+    });
+  } else {
+    copyTL.progress(clamp(p, 0, 1));
+  }
+
   if (a !== active) {
     active = a;
     dots.forEach((d, i) => {
@@ -703,6 +1123,9 @@ function updateUI(p, f) {
       d.setAttribute("aria-current", i === a ? "step" : "false");
     });
   }
+  const activeInsIdx = (FLOW_CLIPS_ENABLED && flow.hasClips) ? findActiveInsert(p) : -1;
+  const activeIns = activeInsIdx >= 0 ? flow.clips[activeInsIdx] : null;
+  updateFlowBadge(activeIns);
 
   const next = STORY.stages[a].hint || "";
   if (next !== hintText) {
@@ -719,7 +1142,9 @@ function updateUI(p, f) {
     finaleEl.style.setProperty("--fo", fo.toFixed(3));
     finaleEl.classList.toggle("is-interactive", fo > 0.65);
   }
+  syncAmbientVideos(fo);
 
+  const box = (FLOW_CLIPS_ENABLED && activeIns && flow.activeBox) ? flow.activeBox : view;
   for (let idx = 0; idx < callouts.length; idx++) {
     const { c, el } = callouts[idx];
     const [s0, s1] = c.show;
@@ -748,8 +1173,8 @@ function updateUI(p, f) {
         y2 = keys[k][2];
       }
     }
-    const sx = view.mx + par.x + view.dx + x * view.dw;
-    const sy = view.my + par.y + view.dy + y2 * view.dh;
+    const sx = view.mx + par.x + box.dx + x * box.dw;
+    const sy = view.my + par.y + box.dy + y2 * box.dh;
     el.style.transform = `translate3d(${sx.toFixed(1)}px, ${(sy - 11).toFixed(1)}px, 0)`;
   }
 }
@@ -810,8 +1235,8 @@ function drawFx(dFilm, dt) {
   fx.globalAlpha = 1;
 }
 
-/* ---------- Scroll: Lenis (wheel only) + ScrollTrigger ---------- */
-storyEl.style.height = `calc(var(--vh) * ${STORY.scrollLength})`;
+/* ---------- Scroll: Single smoother (Lenis on wheel, native momentum on touch) + Sticky overlap ---------- */
+storyEl.style.height = `calc(var(--vh) * ${STORY.scrollLength + 1})`;
 ScrollTrigger.config({ ignoreMobileResize: true });
 
 let lenis = null;
@@ -828,27 +1253,132 @@ let target = 0;
 let current = 0;
 let filmT = 0;
 let storyInView = true;
+let bridgeCovered = false;
+let bridgeProgress = 0;
+let lastBeamOp = -1;
+let lastBeamSeekT = -1;
+let finalePlaying = false;
+
+const lazyVideoBlobPromises = new Map();
+function fetchVideoBlobUrl(url) {
+  let p = lazyVideoBlobPromises.get(url);
+  if (!p) {
+    p = fetch(url)
+      .then((r) => (r.ok ? r.blob() : null))
+      .then((b) => (b ? URL.createObjectURL(b) : url))
+      .catch(() => url);
+    lazyVideoBlobPromises.set(url, p);
+  }
+  return p;
+}
+
+function ensureLazyVideoSrc(el, onReady) {
+  if (!el || !el.dataset?.src) return;
+  if (el.src) {
+    onReady?.();
+    return;
+  }
+  if (el.dataset.lazyLoading) return;
+  el.dataset.lazyLoading = "1";
+  fetchVideoBlobUrl(el.dataset.src).then((resolved) => {
+    if (!el.src) {
+      el.preload = "auto";
+      el.src = resolved;
+    }
+    onReady?.();
+  });
+}
+
+function syncAmbientVideos(fo = lastFinaleO) {
+  if (reduced) return;
+  if (current >= 0.48) ensureLazyVideoSrc(actBeamVideoEl);
+  if (finaleNeuralEl) {
+    const wantFinale = fo > 0.02 && storyInView && !bridgeCovered;
+    if (wantFinale) {
+      if (!finalePlaying) {
+        finalePlaying = true;
+        ensureLazyVideoSrc(finaleNeuralEl, () => {
+          if (finalePlaying) finaleNeuralEl.play().catch(() => {});
+        });
+      }
+    } else if (finalePlaying) {
+      finalePlaying = false;
+      finaleNeuralEl.pause();
+    }
+  }
+  if (actBeamEl && actBeamVideoEl) {
+    const u = bridgeProgress > 0.002
+      ? 0.40 + clamp(bridgeProgress, 0, 1) * 0.60
+      : clamp((current - 0.90) / 0.10, 0, 1) * 0.40;
+    const op = (u <= 0.01 || u >= 0.985) ? 0 : Math.sin(u * Math.PI) * 0.92;
+    if (Math.abs(op - lastBeamOp) > 0.005 || (op === 0 && lastBeamOp !== 0)) {
+      lastBeamOp = op;
+      actBeamEl.style.opacity = op.toFixed(3);
+    }
+    if (op > 0.01 && actBeamVideoEl.readyState >= 2 && Number.isFinite(actBeamVideoEl.duration) && actBeamVideoEl.duration > 0.2) {
+      const targetT = clamp(u, 0, 0.98) * (actBeamVideoEl.duration - 0.05);
+      if (!actBeamVideoEl.seeking && Math.abs(targetT - lastBeamSeekT) >= 0.032) {
+        lastBeamSeekT = targetT;
+        try { actBeamVideoEl.currentTime = targetT; } catch {}
+      }
+    }
+  }
+}
+
+if (readingNeuralEl && !reduced) {
+  const readingRoot = $("#reading");
+  if (readingRoot) {
+    let readingVis = false;
+    new IntersectionObserver((entries) => {
+      readingVis = entries.some((e) => e.isIntersecting);
+      if (readingVis) {
+        ensureLazyVideoSrc(readingNeuralEl, () => {
+          if (readingVis) readingNeuralEl.play().catch(() => {});
+        });
+      } else {
+        readingNeuralEl.pause();
+      }
+    }, { rootMargin: "220px 0px", threshold: 0.005 }).observe(readingRoot);
+  }
+}
 
 const st = ScrollTrigger.create({
   trigger: storyEl,
   start: "top top",
-  end: "bottom bottom",
+  end: () => "+=" + Math.max(1, (STORY.scrollLength - 1) * innerHeight),
   onUpdate: (self) => { target = self.progress; },
   onRefresh: (self) => { target = self.progress; }
 });
 
+// Sticky overlap bridge: #drive slides UP OVER pinned .story-stage across [5.8..6.8]*vh
+if (!reduced) {
+  ScrollTrigger.create({
+    trigger: storyEl,
+    start: () => "top+=" + Math.max(1, (STORY.scrollLength - 1) * innerHeight) + " top",
+    end: () => "top+=" + STORY.scrollLength * innerHeight + " top",
+    scrub: true,
+    onUpdate(self) {
+      const k = clamp(self.progress, 0, 1);
+      bridgeProgress = k;
+      bridgeCovered = k >= 0.99;
+      gsap.set(stageEl, { opacity: 1 - k * 0.72, y: -k * 20, scale: 1 - k * 0.032 });
+      syncAmbientVideos();
+    }
+  });
+}
+
 new IntersectionObserver((entries) => {
   storyInView = entries.some((e) => e.isIntersecting);
-}, { rootMargin: "200px 0px" }).observe(storyEl);
+}, { rootMargin: "40px 0px" }).observe(storyEl);
 
 function progressToY(p) {
   return st.start + p * (st.end - st.start);
 }
 
 function goToStage(i) {
+  inputMode = "wheel";
   const s = STORY.stages[i];
-  const fade = Math.min(0.28 * (s.to - s.from), 0.036);
-  const p = s.from === 0 ? 0 : s.from + fade + 0.012;
+  const p = s.from === 0 ? 0 : Math.min(s.to - 0.04, s.from + 0.048);
   const y = progressToY(p);
   if (lenis) lenis.scrollTo(y, { duration: 1.5, easing: (t) => 1 - Math.pow(1 - t, 4) });
   else window.scrollTo({ top: y, behavior: "auto" });
@@ -865,6 +1395,7 @@ function wireNavLinks() {
     const el = document.querySelector(selector);
     if (!el) return;
     e.preventDefault();
+    inputMode = "wheel";
     const top = el.getBoundingClientRect().top + window.scrollY;
     if (lenis) lenis.scrollTo(top, { duration: 1.25, easing: (t) => 1 - Math.pow(1 - t, 4) });
     else window.scrollTo({ top, behavior: "smooth" });
@@ -915,15 +1446,10 @@ gsap.ticker.add((time, deltaMs) => {
   const dt = Math.min(0.05, deltaMs / 1000);
   if (lenis) lenis.raf(time * 1000);
   if (!ready) return;
-  if (!storyInView && Math.abs(target - current) < 1e-5) return;
+  if ((!storyInView || bridgeCovered) && Math.abs(target - current) < 1e-5) return;
 
-  if (reduced || (lenis && inputMode === "wheel")) {
-    current = target;
-  } else {
-    const k = 1 - Math.exp(-STORY.smoothing.touch * dt);
-    current += (target - current) * k;
-    if (Math.abs(target - current) < 1e-5) current = target;
-  }
+  // Единый smoother: Lenis сглаживает wheel, touch опирается на нативную инерцию без двойного exp-lerp.
+  current = target;
 
   let t = mapKeys(current, STORY.timeKeys);
   if (reduced) {
@@ -942,7 +1468,7 @@ gsap.ticker.add((time, deltaMs) => {
   const f = t * (SET.count - 1);
   const speedZoom = reduced ? 1 : 1 + clamp(Math.abs(dFilm) * 0.42, 0, 0.016);
 
-  renderFrames(f, speedZoom);
+  renderFrames(f, speedZoom, current, Math.max(0, active));
   par.x += (par.tx - par.x) * (1 - Math.exp(-4 * dt));
   par.y += (par.ty - par.y) * (1 - Math.exp(-4 * dt));
   if (Math.abs(par.x - lastUiPx) > 0.04 || Math.abs(par.y - lastUiPy) > 0.04) {
@@ -966,7 +1492,6 @@ const onProgress = (v) => {
   if (pct) pct.textContent = `${Math.round(v * 100)}%`;
 };
 
-poster.src = frameURL(0);
 new ResizeObserver(() => {
   resize();
   ScrollTrigger.refresh();
@@ -974,6 +1499,8 @@ new ResizeObserver(() => {
 resize();
 
 (async () => {
+  await initFlowManifest();
+  poster.src = frameURL(0);
   try {
     await preloadFrames(onProgress);
   } catch (e) {
@@ -981,13 +1508,17 @@ resize();
   }
   await (document.fonts?.ready || Promise.resolve()).catch(() => {});
   dirty = true;
-  renderFrames(0);
+  renderFrames(0, 1, 0);
   updateUI(current, lastF);
   ready = true;
   root.classList.add("story-ready");
   $("#preloader")?.classList.add("is-done");
   ScrollTrigger.refresh();
   window.dispatchEvent(new CustomEvent("story:ready"));
+
+  if (FLOW_CLIPS_ENABLED && flow.hasClips && flow.clips[0]?.available) {
+    setTimeout(() => waitSlotReady(0, 2500).catch(() => {}), 80);
+  }
 })();
 
 window.__story = {
@@ -1000,6 +1531,7 @@ window.__story = {
     loaded: store.loaded,
     count: SET.count,
     set: setName,
+    videoMode: flow.hasClips,
     ready
   }),
   goTo: goToStage,

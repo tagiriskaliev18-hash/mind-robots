@@ -120,8 +120,8 @@
 /* ---------- Story section (Act I) ---------- */
 .story {
   position: relative;
-  z-index: 3;
-  height: calc(var(--vh) * 9.5);
+  z-index: 1;
+  height: calc(var(--vh) * 7.8);
   background: var(--bg);
 }
 
@@ -133,6 +133,8 @@
   overflow: hidden;
   contain: layout paint;
   background: var(--bg);
+  will-change: transform, opacity;
+  transform-origin: 50% 42%;
 }
 
 .stage__media {
@@ -226,7 +228,7 @@ html.mode-video .stage__video {
   bottom: 0;
   width: 100%;
   opacity: 0;
-  transform: translate3d(0, 22px, 0);
+  transform: translate3d(0, 20px, 0);
   will-change: transform, opacity;
   text-shadow: 0 2px 26px rgba(5, 5, 10, 0.65);
 }
@@ -238,17 +240,13 @@ html.mode-video .stage__video {
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--cyan);
-  opacity: 0;
-  transform: translate3d(0, 8px, 0);
-  transition: transform 0.52s var(--ease-out), opacity 0.42s var(--ease-out);
+  will-change: transform, opacity;
 }
 
 .copy__title {
   margin: 0;
   line-height: 0.93;
-  opacity: 0.08;
-  transform: translate3d(0, 10px, 0);
-  transition: transform 0.6s var(--ease-out) 0.04s, opacity 0.48s var(--ease-out) 0.04s;
+  will-change: transform, opacity;
 }
 
 .copy__sub {
@@ -256,16 +254,35 @@ html.mode-video .stage__video {
   max-width: 34ch;
   font: 400 clamp(13.5px, 1.05vw, 15.5px)/1.48 var(--sans);
   color: var(--ink-dim);
-  opacity: 0;
-  transform: translate3d(0, 14px, 0);
-  transition: transform 0.68s var(--ease-out) 0.09s, opacity 0.55s var(--ease-out) 0.09s;
+  will-change: transform, opacity;
 }
 
-.copy__item.is-shown .copy__kicker,
-.copy__item.is-shown .copy__title,
-.copy__item.is-shown .copy__sub {
-  opacity: 1;
-  transform: translate3d(0, 0, 0);
+.flow-slot {
+  position: absolute;
+  z-index: 5;
+  right: var(--pad-x);
+  bottom: max(var(--pad-b), env(safe-area-inset-bottom));
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(9, 9, 15, 0.52);
+  font: 400 10px/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  pointer-events: none;
+  opacity: 0.62;
+}
+
+.flow-slot.is-video {
+  border-color: rgba(0, 245, 255, 0.42);
+  color: #e9ffff;
+  opacity: 0.94;
+}
+
+.flow-slot[hidden],
+.flow-inserts[hidden] {
+  display: none;
 }
 
 .copy__title .caps {
@@ -480,18 +497,58 @@ html.mode-video .stage__video {
   z-index: 8;
   opacity: 0;
   pointer-events: none;
+  overflow: hidden;
   display: grid;
   place-content: center;
   justify-items: center;
   text-align: center;
   gap: 16px;
   padding: 24px;
-  background: radial-gradient(82% 64% at 50% 50%, rgba(9, 9, 15, 0.9), #050509 82%);
+  background: radial-gradient(82% 64% at 50% 50%, rgba(9, 9, 15, 0.88), #050509 84%);
 }
 
-.finale > * {
+.finale__neural {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.36;
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+.finale__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: radial-gradient(70% 58% at 50% 50%, rgba(9, 9, 15, 0.35), rgba(5, 5, 9, 0.88) 82%);
+  pointer-events: none;
+}
+
+.finale > :not(.finale__neural):not(.finale__scrim) {
+  position: relative;
+  z-index: 2;
   transform: translate3d(0, calc((1 - var(--fo, 0)) * 22px), 0);
   opacity: clamp(0, var(--fo, 0) * 1.25, 1);
+}
+
+/* ---------- Act I -> Act II transition beam ---------- */
+.act-beam {
+  position: fixed;
+  inset: 0;
+  z-index: 15;
+  pointer-events: none;
+  opacity: 0;
+  mix-blend-mode: screen;
+  overflow: hidden;
+}
+
+.act-beam__video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .finale__cta {
@@ -639,6 +696,9 @@ html.is-still .preloader {
 
 /* ---------- Mobile (iPhone 390x844) ---------- */
 @media (max-width: 700px) {
+  .flow-slot {
+    display: none;
+  }
   .site-bar {
     padding: max(12px, env(safe-area-inset-top)) 16px 0;
   }
@@ -697,9 +757,15 @@ html.is-still .preloader {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .finale__neural,
+  .act-beam,
   .story-grain,
   .hint__ring i {
     animation: none;
+  }
+  .finale__neural,
+  .act-beam {
+    display: none;
   }
   .copy__item {
     transform: none !important;

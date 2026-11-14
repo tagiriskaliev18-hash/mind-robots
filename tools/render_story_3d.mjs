@@ -43,9 +43,6 @@ async function captureMode(mode, count) {
 
   const framesOut = path.resolve(`assets/frames/${mode}`);
   fs.mkdirSync(framesOut, { recursive: true });
-  for (const f of fs.readdirSync(framesOut)) {
-    if (f.endsWith(".webp")) fs.unlinkSync(path.join(framesOut, f));
-  }
   await new Promise((resolve, reject) => {
     const ff = spawn("ffmpeg", [
       "-y", "-v", "error",

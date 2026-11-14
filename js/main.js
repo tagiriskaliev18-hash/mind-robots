@@ -76,15 +76,27 @@ TABS.forEach((t, i) => {
   b.setAttribute("aria-pressed", "false");
   tabsEl.append(b);
 });
-$("drive").style.height = (TABS.length + 1) * 100 + "svh";
+$("drive").style.height = (TABS.length + 2) * 100 + "svh";
 let scrollLock = false;
 let liveInView = false;
 let introPending = false;
 let bootStarted = false;
+let bootPromise = null;
 let ensureBoot = () => {};
+let glbBufferPromise = null;
 let rafId = null;
 let lastCamSig = NaN;
 let lastCoordsStr = "";
+
+const nextFrame = () => new Promise((r) => requestAnimationFrame(() => setTimeout(r, 0)));
+
+function prefetchGlbBuffer() {
+  if (glbBufferPromise || !PRODUCT.glb) return glbBufferPromise;
+  glbBufferPromise = fetch(PRODUCT.glb)
+    .then((r) => (r.ok ? r.arrayBuffer() : null))
+    .catch(() => null);
+  return glbBufferPromise;
+}
 
 function wakeLoop() {
   if (!rafId) {
@@ -95,9 +107,17 @@ function wakeLoop() {
   }
 }
 
+function setNavActive(id) {
+  for (const k of ["navStory", "navLive", "navSpecs"]) {
+    const el = $(k);
+    if (el) el.classList.toggle("is-current", k === id);
+  }
+}
+
 new IntersectionObserver((entries) => {
   const wasInView = liveInView;
   liveInView = entries.some((e) => e.isIntersecting);
+  window.dispatchEvent(new CustomEvent("mind:live", { detail: { active: liveInView } }));
   if (liveInView) {
     ensureBoot();
     if (!wasInView && introPending && app.parts.length) {
@@ -113,6 +133,10 @@ new IntersectionObserver((entries) => {
   }
 }, { rootMargin: "0px", threshold: 0.01 }).observe($("drive"));
 
+new IntersectionObserver((entries) => {
+  if (entries.some((e) => e.isIntersecting)) ensureBoot();
+}, { rootMargin: "260px 0px", threshold: 0.001 }).observe($("drive"));
+
 $("stage")?.addEventListener("pointerdown", wakeLoop, { passive: true });
 $("stage")?.addEventListener("wheel", wakeLoop, { passive: true });
 addEventListener("stage:dirty", () => { if (liveInView) wakeLoop(); });
@@ -121,7 +145,7 @@ addEventListener("resize", () => { if (liveInView) wakeLoop(); }, { passive: tru
 function scrollToProgress(p, immediate = false) {
   const drive = $("drive");
   const base = drive.offsetTop;
-  const max = Math.max(0, drive.offsetHeight - innerHeight);
+  const max = Math.max(1, TABS.length * innerHeight);
   const dest = base + p * max;
   if (immediate || still || !gsap) {
     if (window.__lenis) window.__lenis.scrollTo(dest, { immediate: true });
@@ -183,6 +207,45 @@ app.scrollToLiveHero = () => {
   wakeLoop();
 };
 
+function bindScroll() {
+  if (!gsap || !ScrollTrigger) return;
+  gsap.registerPlugin(ScrollTrigger);
+  const pinEl = $("livePin");
+  if (pinEl) gsap.set(pinEl, { opacity: 1, y: 0, scale: 1 });
+
+  ScrollTrigger.create({
+    trigger: "#drive",
+    start: "top top",
+    end: () => "+=" + TABS.length * innerHeight,
+    onUpdate(self) {
+      if (scrollLock || app.mode === "intro") return;
+      if (self.isActive) setNavActive("navLive");
+      const idx = Math.round(self.progress * TABS.length) - 1;
+      if (idx < 0) {
+        if (app.mode !== "hero") enterHero(true);
+        return;
+      }
+      if (app.tab !== idx) applyTab(idx, true);
+    }
+  });
+
+  // Sticky overlap bridge: #reading slides UP OVER pinned #livePin as #livePin recedes cleanly.
+  if (pinEl && !still) {
+    ScrollTrigger.create({
+      trigger: "#drive",
+      start: () => "top+=" + TABS.length * innerHeight + " top",
+      end: () => "top+=" + (TABS.length + 1) * innerHeight + " top",
+      scrub: true,
+      onUpdate(self) {
+        const k = Math.max(0, Math.min(1, self.progress));
+        gsap.set(pinEl, { opacity: 1 - k * 0.72, y: -k * 20, scale: 1 - k * 0.032 });
+        if (k > 0.45) setNavActive("navSpecs");
+        else if (liveInView) setNavActive("navLive");
+      }
+    });
+  }
+}
+
 function applyTab(i, fromScroll) {
   initStage();
   const tab = TABS[i];
@@ -215,24 +278,7 @@ addEventListener("keydown", (e) => {
   if (e.key === "Escape") enterHero(false);
 });
 
-function bindScroll() {
-  if (!gsap || !ScrollTrigger) return;
-  gsap.registerPlugin(ScrollTrigger);
-  ScrollTrigger.create({
-    trigger: "#drive",
-    start: "top top",
-    end: "bottom bottom",
-    onUpdate(self) {
-      if (scrollLock || app.mode === "intro") return;
-      const idx = Math.round(self.progress * TABS.length) - 1;
-      if (idx < 0) {
-        if (app.mode !== "hero") enterHero(true);
-        return;
-      }
-      if (app.tab !== idx) applyTab(idx, true);
-    }
-  });
-}
+function bindOldPlaceholderRemoved() {} // Scroll binding defined above app.scrollToLiveHero
 
 function animateIntroEntrance() {
   const heroPhoneMul = isPhone() ? (HERO.phoneRadius ?? 1.18) : 1;
@@ -321,17 +367,19 @@ function playIntro() {
 // ---------- boot ----------
 async function boot() {
   initStage();
-  await new Promise((r) => setTimeout(r, 0));
+  await nextFrame();
   let model;
   try {
     if (!PRODUCT.glb) throw new Error("no glb");
-    model = await loadModel(PRODUCT.glb, stage.renderer, mats, (f) => {
+    const buf = glbBufferPromise ? await glbBufferPromise : null;
+    model = await loadModel(buf || PRODUCT.glb, stage.renderer, mats, (f) => {
       if ($("loader-bar")) $("loader-bar").style.width = Math.round(f * 70) + "%";
     }, still);
   } catch (err) {
     console.warn("model: placeholder", err.message);
     model = placeholderModel(mats);
   }
+  if (!still) await nextFrame();
   scene.add(model.root);
   app.parts = model.parts;
 
@@ -341,18 +389,37 @@ async function boot() {
   stage.shadowLight.position.set(-0.14, app.floorY + 6.4, 0.18);
   stage.shadowLight.target.position.set(0, app.floorY, 0);
 
-  const visorBar = new THREE.CapsuleGeometry(0.0028, 0.048, 6, 16);
-  const chestSlit = new THREE.CapsuleGeometry(0.0018, 0.032, 6, 16);
-  const jointRing = new THREE.TorusGeometry(0.013, 0.0017, 12, 36);
-  addLamp(app.lamps, scene, findPart("head_link") || findPart("head"), [0.068, -0.022, 0], visorBar, mats.led, [Math.PI / 2, 0, 0]);
-  addLamp(app.lamps, scene, findPart("torso_link") || findPart("torso"), [0.076, 0.034, 0], chestSlit, mats.led, [Math.PI / 2, 0, 0]);
-  addLamp(app.lamps, scene, findPart("left_elbow_link") || findPart("armL"), [0.002, -0.026, -0.0355], jointRing, mats.led, [0, 0, 0]);
-  addLamp(app.lamps, scene, findPart("right_elbow_link") || findPart("armR"), [0.002, -0.026, 0.0355], jointRing, mats.led, [0, 0, 0]);
+  const anchor = (part, wx, wy, wz) => part
+    ? [wx - part.centerLocal.x, wy - part.centerLocal.y, wz - part.centerLocal.z]
+    : [wx, wy, wz];
+  const facePart = findPart("head_faceplate") || findPart("head_visor_glass") || findPart("head_link");
+  if (facePart) {
+    const fb = facePart.mesh.geometry.boundingBox;
+    const fx = fb.max.x + 0.002;
+    // Короткий выразительный LED-индикатор речи в нижней части светлой лицевой панели Apollo 2
+    addLamp(app.lamps, scene, facePart, anchor(facePart, fx, 1.560, 0), new THREE.CapsuleGeometry(0.0022, 0.030, 6, 14), mats.led, [Math.PI / 2, 0, 0], 0.072);
+  }
+  const chestOled = findPart("logo_chest_ui") || findPart("logo_link") || findPart("torso_link");
+  if (chestOled) {
+    const cb = chestOled.mesh.geometry.boundingBox;
+    // Тонкий активный индикатор под нагрудной камерой (не перекрывает статус-интерфейс 123/NET/BAT)
+    addLamp(app.lamps, scene, chestOled, anchor(chestOled, cb.max.x + 0.002, 1.292, 0), new THREE.CapsuleGeometry(0.0018, 0.044, 6, 14), mats.led, [Math.PI / 2, 0, 0], 0.068);
+  }
+  const jointRing = new THREE.TorusGeometry(0.015, 0.0018, 12, 32);
+  for (const [token, sign] of [["left_elbow_link", -1], ["right_elbow_link", 1]]) {
+    const ep = findPart(token);
+    if (ep) {
+      const eb = ep.mesh.geometry.boundingBox;
+      const zOut = sign < 0 ? eb.min.z - 0.0015 : eb.max.z + 0.0015;
+      addLamp(app.lamps, scene, ep, anchor(ep, ep.centerLocal.x, ep.centerLocal.y, zOut), jointRing, mats.led, [0, 0, 0], 0.07);
+    }
+  }
 
   if ($("loader-bar")) $("loader-bar").style.width = "100%";
   await Promise.race([document.fonts?.ready, new Promise((r) => setTimeout(r, 1200))]);
-  await new Promise((r) => setTimeout(r, 0)); // yield one macrotask before GPU shader compile
+  if (!still) await nextFrame();
   stage.renderer.compile(scene, camera);
+  if (!still) await nextFrame();
   playIntro();
 }
 
@@ -423,39 +490,57 @@ function tick(now) {
   rafId = requestAnimationFrame(tick);
 }
 
-// Ленивый старт Акта II после первого кадра Акта I, при скролле или клике — ноль нагрузки на старт Акта I
+// Предзагрузка бинарного GLB в фоне (0 мс WebGL), а компиляция Act II только при простое или подходе к #drive
 function scheduleBoot() {
   ensureBoot = () => {
-    if (bootStarted) return;
+    if (bootStarted) return bootPromise;
     bootStarted = true;
-    boot().catch((err) => {
+    bootPromise = boot().catch((err) => {
       console.error(err);
       $("fail").hidden = false;
     });
+    return bootPromise;
   };
   if (still || liveInView) {
     ensureBoot();
     return;
   }
-  const triggerLater = () => setTimeout(() => ensureBoot(), 400);
-  if (window.__story?.state()?.ready) triggerLater();
-  else addEventListener("story:ready", triggerLater, { once: true });
 
-  const onScroll = () => {
-    const storyEl = $("story");
-    const thresh = storyEl ? storyEl.offsetTop + Math.min(innerHeight * 0.65, storyEl.offsetHeight * 0.12) : innerHeight * 0.65;
-    if (scrollY >= thresh || liveInView) {
-      removeEventListener("scroll", onScroll);
-      ensureBoot();
+  let lastScrollTs = performance.now();
+  let idleTimer = null;
+  const markScroll = () => { lastScrollTs = performance.now(); };
+  addEventListener("wheel", markScroll, { passive: true });
+  addEventListener("touchmove", markScroll, { passive: true });
+  addEventListener("scroll", () => {
+    markScroll();
+    const driveEl = $("drive");
+    if (driveEl && scrollY >= driveEl.offsetTop - innerHeight * 1.18) ensureBoot();
+  }, { passive: true });
+
+  function waitIdleBoot() {
+    if (bootStarted) return;
+    const since = performance.now() - lastScrollTs;
+    if (since >= 950 && document.visibilityState === "visible") {
+      const idle = window.requestIdleCallback || ((cb) => setTimeout(cb, 16));
+      idle(() => {
+        if (!bootStarted && performance.now() - lastScrollTs >= 900) ensureBoot();
+        else if (!bootStarted) idleTimer = setTimeout(waitIdleBoot, 500);
+      });
+    } else {
+      idleTimer = setTimeout(waitIdleBoot, Math.max(350, 950 - since));
     }
+  }
+
+  const onStoryReady = () => {
+    prefetchGlbBuffer();
+    idleTimer = setTimeout(waitIdleBoot, 950);
   };
-  addEventListener("scroll", onScroll, { passive: true });
+  if (window.__story?.state()?.ready) onStoryReady();
+  else addEventListener("story:ready", onStoryReady, { once: true });
+
   $("navLive")?.addEventListener("click", () => ensureBoot(), { once: true });
+  $("navSpecs")?.addEventListener("click", () => ensureBoot(), { once: true });
   $("finaleToLive")?.addEventListener("click", () => ensureBoot(), { once: true });
-  // Запасной ленивый старт на случай если Акт I ещё грузится дольше 2.8с
-  const idle = window.requestIdleCallback || ((cb) => setTimeout(cb, 2800));
-  setTimeout(() => idle(() => {
-    if (!bootStarted && document.visibilityState === "visible") ensureBoot();
-  }), 2800);
+  void idleTimer;
 }
 scheduleBoot();

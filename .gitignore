@@ -5,6 +5,12 @@ tools/.cache_g1/
 tools/.cache_hf/
 tools/.cache_3d/
 assets/*.bak-*/
+assets/refs/
+assets/video/apollo_*.mp4
+assets/video/bg_neural_loop.mp4
+assets/video/transition_beam.mp4
+assets/video/scrub/desktop/
+assets/video/scrub/mobile/
 *.bak-*
 tools/__pycache__/
 __pycache__/

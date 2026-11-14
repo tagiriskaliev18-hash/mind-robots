@@ -9,17 +9,42 @@ const groupOf = (name) => (PARTS_MAP.find(([re]) => re.test(name)) || [null, "to
 export function makeMaterials() {
   const shell = new THREE.MeshStandardMaterial({
     color: PALETTE.shell,
-    roughness: 0.54,
+    roughness: 0.46,
     metalness: 0.04,
-    envMapIntensity: 0.16
+    envMapIntensity: 0.24
+  });
+  const faceplate = new THREE.MeshStandardMaterial({
+    color: 0xe3e6ec,
+    roughness: 0.44,
+    metalness: 0.04,
+    envMapIntensity: 0.22
   });
   const joint = new THREE.MeshStandardMaterial({
     color: PALETTE.joint,
-    roughness: 0.58,
+    roughness: 0.46,
     metalness: 0.62,
-    envMapIntensity: 0.42
+    envMapIntensity: 0.44
   });
-  // Только эти меши ярче порога bloom: emissive 8 при toneMapped:false, порог 3.4.
+  const glass = new THREE.MeshStandardMaterial({
+    color: PALETTE.glass,
+    roughness: 0.12,
+    metalness: 0.34,
+    envMapIntensity: 0.92
+  });
+  const estop = new THREE.MeshStandardMaterial({
+    color: 0xa61618,
+    roughness: 0.36,
+    metalness: 0.12,
+    envMapIntensity: 0.30
+  });
+  const greenLed = new THREE.MeshStandardMaterial({
+    color: 0x0c3d20,
+    emissive: 0x18e066,
+    emissiveIntensity: 1.4,
+    toneMapped: false,
+    roughness: 0.24
+  });
+  // Яркие циан-акценты Apptronik Apollo × Mind (LED-индикатор речи, статус-глинт и локтевые узлы).
   const led = new THREE.MeshStandardMaterial({
     color: 0x00383c,
     emissive: PALETTE.cyan,
@@ -27,7 +52,7 @@ export function makeMaterials() {
     toneMapped: false,
     roughness: 0.2
   });
-  return { shell, joint, led };
+  return { shell, faceplate, joint, glass, estop, greenLed, led };
 }
 
 // Каждая деталь — запись с пружинным состоянием. Меши НЕ перепаренчиваются: двигаем position относительно rest.
@@ -50,10 +75,18 @@ function registerPart(parts, obj) {
   });
 }
 
-export async function loadModel(url, renderer, mats, onProgress, still = false) {
+// Загрузка или разбор предзагруженного ArrayBuffer GLB по микро-чанкам без статтеров Act I.
+export async function loadModel(source, renderer, mats, onProgress, still = false) {
   const loader = new GLTFLoader();
   loader.setMeshoptDecoder(MeshoptDecoder);
-  const gltf = await loader.loadAsync(url, (e) => e.total && onProgress(e.loaded / e.total));
+  let gltf;
+  if (source instanceof ArrayBuffer) {
+    onProgress?.(0.75);
+    gltf = await loader.parseAsync(source, "");
+    onProgress?.(1);
+  } else {
+    gltf = await loader.loadAsync(source, (e) => e.total && onProgress?.(e.loaded / e.total));
+  }
 
   normalize(gltf.scene);
   // Flatten: запекаем мировую матрицу в геометрию, все меши — прямые дети плоского root с identity-трансформом.
@@ -69,12 +102,39 @@ export async function loadModel(url, renderer, mats, onProgress, still = false) 
     obj.position.set(0, 0, 0);
     obj.quaternion.identity();
     obj.scale.set(1, 1, 1);
-    const dark = obj.material?.color && obj.material.color.r < 0.4;
-    obj.material = dark ? mats.joint : mats.shell;
+    const matName = obj.material?.name || "";
+    const srcMat = obj.material;
+    if (srcMat?.map && !matName.startsWith("Palette")) {
+      srcMat.map.colorSpace = THREE.SRGBColorSpace;
+      srcMat.map.needsUpdate = true;
+      const isCutout = srcMat.alphaMode === "MASK" || matName === "apollo_wordmark" || matName === "apollo_back_monogram";
+      obj.material = new THREE.MeshStandardMaterial({
+        map: srcMat.map,
+        color: 0xffffff,
+        roughness: isCutout ? 0.52 : 0.14,
+        metalness: isCutout ? 0.02 : 0.18,
+        envMapIntensity: isCutout ? 0.22 : 0.42,
+        transparent: isCutout,
+        alphaTest: isCutout ? 0.35 : 0,
+        polygonOffset: true,
+        polygonOffsetFactor: -1,
+        polygonOffsetUnits: -1
+      });
+    } else if (matName === "apollo_faceplate") {
+      obj.material = mats.faceplate;
+    } else if (matName === "apollo_estop") {
+      obj.material = mats.estop;
+    } else if (matName === "apollo_green_led") {
+      obj.material = mats.greenLed;
+    } else {
+      const isGlass = matName === "apollo_glass" || /visor|logo|oled/i.test(obj.name);
+      const dark = !isGlass && srcMat?.color && srcMat.color.r < 0.4;
+      obj.material = isGlass ? mats.glass : (dark ? mats.joint : mats.shell);
+    }
     obj.castShadow = false;
     root.add(obj);
     registerPart(parts, obj);
-    // Разбиваем распаковку буферов на микро-чанки, чтобы Act I не замирал во время предзагрузки Act II
+    // Разбиваем распаковку буферов на микро-чанки, чтобы Act I не замирал во время подготовки Act II.
     if (!still && i % 5 === 4) await nextFrame();
   }
   return { root, parts };
@@ -126,7 +186,7 @@ function toFloat(src) {
   return geo;
 }
 
-// Реальный масштаб: высота = PRODUCT.height (м), центр по X/Z = 0, пол = y 0.
+// Реальный масштаб: высота = PRODUCT.height (1.73 м), центр по X/Z = 0, пол = y 0.
 function normalize(root) {
   root.updateMatrixWorld(true);
   const box = new THREE.Box3().setFromObject(root);
@@ -139,31 +199,33 @@ function normalize(root) {
   root.updateMatrixWorld(true);
 }
 
-// Плейсхолдер: инженерная фигура в масштабе 1.32 м на случай отсутствия GLB.
+// Плейсхолдер: инженерная фигура Apptronik Apollo в масштабе 1.73 м на случай отсутствия GLB.
 export function placeholderModel(mats) {
   const root = new THREE.Group();
   const parts = [];
-  const add = (name, geo, pos, dark) => {
-    const m = new THREE.Mesh(geo, dark ? mats.joint : mats.shell);
+  const add = (name, geo, pos, mat = mats.shell) => {
+    const m = new THREE.Mesh(geo, mat);
     m.name = name;
     m.position.set(...pos);
-    m.castShadow = true;
     root.add(m);
     registerPart(parts, m);
   };
-  add("head_link", new THREE.CapsuleGeometry(0.085, 0.06, 8, 24), [0, 1.22, 0], true);
-  add("logo_link", new THREE.BoxGeometry(0.06, 0.04, 0.12), [0.05, 1.06, 0]);
-  add("torso_link", new THREE.BoxGeometry(0.2, 0.32, 0.22, 4, 4, 4), [0, 0.98, 0]);
-  add("waist_yaw_link", new THREE.CylinderGeometry(0.05, 0.055, 0.06, 24), [0, 0.81, 0], true);
-  add("pelvis_contour_link", new THREE.BoxGeometry(0.16, 0.13, 0.18), [0, 0.7, 0]);
+  add("head_link", new THREE.CapsuleGeometry(0.10, 0.08, 8, 24), [0, 1.62, 0], mats.shell);
+  add("head_visor_glass", new THREE.BoxGeometry(0.06, 0.11, 0.14), [0.075, 1.61, 0], mats.glass);
+  add("logo_link", new THREE.BoxGeometry(0.04, 0.13, 0.19), [0.13, 1.32, 0], mats.glass);
+  add("torso_link", new THREE.BoxGeometry(0.25, 0.40, 0.36, 4, 4, 4), [0, 1.26, 0], mats.shell);
+  add("battery_pack_link", new THREE.BoxGeometry(0.07, 0.24, 0.20), [-0.13, 1.28, 0], mats.joint);
+  add("waist_yaw_link", new THREE.CylinderGeometry(0.085, 0.09, 0.09, 24), [0, 1.03, 0], mats.joint);
+  add("pelvis_contour_link", new THREE.BoxGeometry(0.20, 0.14, 0.24), [0, 0.92, 0], mats.shell);
   for (const [s, side] of [["left", -1], ["right", 1]]) {
-    add(s + "_shoulder_roll_link", new THREE.SphereGeometry(0.055, 24, 16), [0, 1.05, side * 0.15]);
-    add(s + "_elbow_link", new THREE.CapsuleGeometry(0.038, 0.16, 8, 16), [0, 0.86, side * 0.19], true);
-    add(s + "_wrist_yaw_link", new THREE.CapsuleGeometry(0.034, 0.12, 8, 16), [0, 0.71, side * 0.21]);
-    add(s + "_hand_dex3", new THREE.BoxGeometry(0.07, 0.14, 0.06), [0.02, 0.59, side * 0.22]);
-    add(s + "_hip_yaw_link", new THREE.CapsuleGeometry(0.055, 0.22, 8, 16), [0, 0.45, side * 0.11], true);
-    add(s + "_knee_link", new THREE.CapsuleGeometry(0.048, 0.24, 8, 16), [0, 0.21, side * 0.11]);
-    add(s + "_ankle_roll_link", new THREE.BoxGeometry(0.2, 0.05, 0.08), [0.02, 0.025, side * 0.11], true);
+    add(s + "_shoulder_roll_link", new THREE.SphereGeometry(0.056, 20, 14), [0, 1.40, side * 0.23], mats.joint);
+    add(s + "_elbow_link", new THREE.CapsuleGeometry(0.042, 0.22, 8, 16), [0, 1.12, side * 0.26], mats.joint);
+    add(s + "_wrist_yaw_link", new THREE.CapsuleGeometry(0.038, 0.19, 8, 16), [0.01, 0.96, side * 0.26], mats.shell);
+    add(s + "_hand_dex3", new THREE.BoxGeometry(0.06, 0.15, 0.07), [0.025, 0.76, side * 0.27], mats.shell);
+    add(s + "_hip_yaw_link", new THREE.CapsuleGeometry(0.065, 0.28, 8, 16), [0, 0.70, side * 0.11], mats.shell);
+    add(s + "_knee_link", new THREE.CapsuleGeometry(0.054, 0.28, 8, 16), [0, 0.31, side * 0.11], mats.shell);
+    add(s + "_knee_actuator_link", new THREE.CylinderGeometry(0.016, 0.016, 0.28, 12), [-0.04, 0.30, side * 0.11], mats.joint);
+    add(s + "_ankle_roll_link", new THREE.BoxGeometry(0.24, 0.05, 0.10), [0.04, 0.025, side * 0.11], mats.joint);
   }
   return { root, parts };
 }
@@ -186,7 +248,7 @@ function glowTex() {
 }
 
 // Циан-лампы (с мягким аддитивным ореолом вместо дорогого полноэкранного Blur Composer) крепятся к детали.
-export function addLamp(lamps, scene, part, local, geo, mat, rot = [0, 0, 0]) {
+export function addLamp(lamps, scene, part, local, geo, mat, rot = [0, 0, 0], haloScale = 0.10) {
   if (!part) return;
   const lamp = new THREE.Mesh(geo, mat);
   lamp.rotation.set(rot[0], rot[1], rot[2]);
@@ -198,7 +260,7 @@ export function addLamp(lamps, scene, part, local, geo, mat, rot = [0, 0, 0]) {
     blending: THREE.AdditiveBlending,
     depthWrite: false
   }));
-  halo.scale.set(0.11, 0.11, 1);
+  halo.scale.set(haloScale, haloScale, 1);
   lamp.add(halo);
   lamp.userData = { part, halo, local: new THREE.Vector3(...local) };
   lamps.push(lamp);

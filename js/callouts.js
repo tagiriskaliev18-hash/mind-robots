@@ -2,8 +2,11 @@ import * as THREE from "three";
 
 const NS = "http://www.w3.org/2000/svg";
 const v = new THREE.Vector3();
+const tmpAt = new THREE.Vector3();
 
 // Callout'ы — DOM-карточки в двух колонках у краёв кадра, связанные с 3D-якорем ломаной leader-line.
+// Размеры кешируются разделёнными фазами (сначала все записи, потом все чтения) строго на show()/resize(),
+// в покадровом update() — ноль forced layout (ни одного offsetHeight/offsetTop/getBoundingClientRect).
 export function createCallouts({ els, svg, isPhone, getSafe }) {
   const lines = els.map(() => {
     const g = document.createElementNS(NS, "g");
@@ -19,20 +22,33 @@ export function createCallouts({ els, svg, isPhone, getSafe }) {
   let cachedW = 190;
   let cachedSvgLeft = 0;
   let cachedSvgTop = 0;
+  let cachedWinW = innerWidth;
+  let cachedWinH = innerHeight;
+  let cachedPhone = isPhone();
+  let cachedSafe = { top: 110, bottom: innerHeight - 78 };
   let layoutDirty = true;
 
   function measureCache() {
-    const phone = isPhone();
-    const w = innerWidth;
-    const widthCss = phone ? "min(156px, 44vw)" : "min(210px, 18vw)";
-    cachedW = phone ? Math.min(156, w * 0.44) : Math.min(210, w * 0.18);
+    cachedPhone = isPhone();
+    cachedWinW = innerWidth;
+    cachedWinH = innerHeight;
+    const widthCss = cachedPhone ? "min(156px, 44vw)" : "min(210px, 18vw)";
+    cachedW = cachedPhone ? Math.min(156, cachedWinW * 0.44) : Math.min(210, cachedWinW * 0.18);
+
+    // Phase 1: batch all DOM style writes before any layout read
+    for (let i = 0; i < els.length; i++) {
+      els[i].style.width = widthCss;
+      if (specs[i] && els[i].hidden) els[i].hidden = false;
+    }
+
+    // Phase 2: batch all layout reads together in one pass
     const svgRect = svg.getBoundingClientRect();
     cachedSvgLeft = svgRect.left;
     cachedSvgTop = svgRect.top;
-    els.forEach((el, i) => {
-      el.style.width = widthCss;
-      cachedH[i] = el.hidden ? 64 : (el.offsetHeight || 64);
-    });
+    cachedSafe = getSafe();
+    for (let i = 0; i < els.length; i++) {
+      cachedH[i] = specs[i] ? (els[i].offsetHeight || 64) : 64;
+    }
     layoutDirty = false;
   }
   addEventListener("resize", () => { layoutDirty = true; }, { passive: true });
@@ -56,28 +72,34 @@ export function createCallouts({ els, svg, isPhone, getSafe }) {
 
   function update(camera, alpha) {
     if (layoutDirty) measureCache();
-    const w = innerWidth, h = innerHeight, phone = isPhone();
-    const safe = getSafe();
+    const w = cachedWinW, h = cachedWinH, phone = cachedPhone;
+    const safe = cachedSafe;
     const gutter = phone ? 16 : Math.max(28, w * 0.04);
     const cols = { left: [], right: [] };
 
     specs.forEach((c, i) => {
       const el = els[i];
       const p = c.partRef;
-      if (!p) { el.hidden = true; el.style.opacity = "0"; lines[i].g.style.opacity = "0"; return; }
-      el.hidden = false;
-      v.copy(p.mesh.position).add(p.centerLocal).add(new THREE.Vector3(...c.at)).project(camera);
+      if (!p) {
+        if (!el.hidden) el.hidden = true;
+        el.style.opacity = "0";
+        lines[i].g.style.opacity = "0";
+        return;
+      }
+      if (el.hidden) el.hidden = false;
+      tmpAt.set(c.at[0], c.at[1], c.at[2]);
+      v.copy(p.mesh.position).add(p.centerLocal).add(tmpAt).project(camera);
       if (v.z > 1 || Math.abs(v.x) > 1.05 || Math.abs(v.y) > 1.05) {
         el.style.opacity = "0";
         lines[i].g.style.opacity = "0";
         return;
       }
-      const item = { el, i, x: (v.x * 0.5 + 0.5) * w, y: (-v.y * 0.5 + 0.5) * h, desk: !!c.desk, forceSide: c.side };
+      const item = { el, i, x: (v.x * 0.5 + 0.5) * w, y: (-v.y * 0.5 + 0.5) * h, desk: !!c.desk, forceSide: c.side, h: cachedH[i], top: 0, hidden: false };
       item.side = c.side || (item.x < w * 0.5 ? "left" : "right");
       cols[item.side].push(item);
     });
 
-    // На телефоне верхняя полоса (36% высоты) вмещает по одной карточке в колонку: если обе попали в одну, а вторая пуста — балансируем.
+    // На телефоне верхняя полоса (36% высоты) вмещает по одной карточке в колонку: балансируем если обе попали в одну.
     if (phone && cols.left.length > 1 && cols.right.length === 0) {
       cols.left.sort((a, b) => a.x - b.x);
       const moved = cols.left.pop();
@@ -94,33 +116,29 @@ export function createCallouts({ els, svg, isPhone, getSafe }) {
       const col = cols[side].sort((a, b) => a.y - b.y);
       let cursor = safe.top;
       for (const it of col) {
-        const el = it.el;
-        el.style.left = side === "left" ? gutter + "px" : "auto";
-        el.style.right = side === "right" ? gutter + "px" : "auto";
-        const top = phone ? cursor : Math.max(cursor, Math.round(it.y - 24));
-        el.style.top = top + "px";
-        it.h = cachedH[it.i];
-        it.top = top;
-        cursor = top + it.h + 16;
+        it.top = phone ? cursor : Math.max(cursor, Math.round(it.y - 24));
+        cursor = it.top + it.h + 16;
       }
       const limit = phone ? h * 0.36 : safe.bottom;
       const last = col[col.length - 1];
       if (last && last.top + last.h > limit) {
         const shift = last.top + last.h - limit;
-        col.forEach((it) => { it.top = Math.max(safe.top, it.top - shift); it.el.style.top = it.top + "px"; });
+        for (const it of col) it.top = Math.max(safe.top, it.top - shift);
         for (let k = 1; k < col.length; k++) {
-          if (col[k].top < col[k - 1].top + col[k - 1].h + 8) {
-            col[k].hidden = true;
-            col[k].el.hidden = true;
-          }
+          if (col[k].top < col[k - 1].top + col[k - 1].h + 8) col[k].hidden = true;
         }
       }
     }
 
+    // Pure DOM/SVG writes (zero reads after writes)
     for (const side of ["left", "right"]) {
       for (const it of cols[side]) {
         const L = lines[it.i];
+        it.el.style.left = side === "left" ? gutter + "px" : "auto";
+        it.el.style.right = side === "right" ? gutter + "px" : "auto";
+        it.el.style.top = it.top + "px";
         if (it.hidden || alpha < 0.04) {
+          it.el.hidden = Boolean(it.hidden);
           L.g.style.opacity = "0";
           it.el.style.opacity = it.hidden ? "0" : String(alpha);
           continue;
