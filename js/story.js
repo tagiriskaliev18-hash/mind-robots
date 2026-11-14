@@ -8,14 +8,14 @@ gsap.registerPlugin(ScrollTrigger);
 
 export const STORY = {
   source: "frames",
-  scrollLength: 9.8,
-  smoothing: { wheel: 10, touch: 7.5 },
+  scrollLength: 6.8,
+  smoothing: { wheel: 11, touch: 8.5 },
   maxFramesPerSecond: 260,
   blend: true,
   focus: { desktop: [0.50, 0.50], mobile: [0.50, 0.45] },
   sets: {
-    desktop: { dir: "assets/frames/desktop/", count: 210, ext: "webp", pad: 4, w: 1440, h: 810 },
-    mobile:  { dir: "assets/frames/mobile/",  count: 165, ext: "webp", pad: 4, w: 640,  h: 1138 }
+    desktop: { dir: "assets/frames/desktop/", count: 320, ext: "webp", pad: 4, w: 1280, h: 720 },
+    mobile:  { dir: "assets/frames/mobile/",  count: 220, ext: "webp", pad: 4, w: 540,  h: 960 }
   },
   video: { desktop: "assets/film-desktop.mp4", mobile: "assets/film-mobile.mp4", fps: 30 },
   // Continuous 3D timeline mapping: scroll progress [0..1] -> rendered 3D assembly film [0..1]
@@ -88,40 +88,40 @@ export const STORY = {
       label: "CAD · 1,32 м",
       show: [0.015, 0.12],
       keys: {
-        desktop: [[0, 0.48, 0.20], [25, 0.49, 0.24], [209, 0.49, 0.24]],
-        mobile:  [[0, 0.54, 0.20], [18, 0.54, 0.22], [164, 0.54, 0.22]]
+        desktop: [[0, 0.48, 0.20], [38, 0.49, 0.24], [319, 0.49, 0.24]],
+        mobile:  [[0, 0.54, 0.20], [24, 0.54, 0.22], [219, 0.54, 0.22]]
       }
     },
     {
       label: "Рама Al-7075",
       show: [0.15, 0.245],
       keys: {
-        desktop: [[25, 0.51, 0.46], [56, 0.50, 0.46], [209, 0.50, 0.46]],
-        mobile:  [[18, 0.51, 0.38], [43, 0.50, 0.36], [164, 0.50, 0.36]]
+        desktop: [[38, 0.51, 0.46], [85, 0.50, 0.46], [319, 0.50, 0.46]],
+        mobile:  [[24, 0.51, 0.38], [57, 0.50, 0.36], [219, 0.50, 0.36]]
       }
     },
     {
       label: "PMSM · 120 Н·м",
       show: [0.28, 0.375],
       keys: {
-        desktop: [[58, 0.38, 0.44], [90, 0.37, 0.41], [209, 0.37, 0.41]],
-        mobile:  [[44, 0.28, 0.43], [72, 0.27, 0.40], [164, 0.27, 0.40]]
+        desktop: [[88, 0.38, 0.44], [137, 0.37, 0.41], [319, 0.37, 0.41]],
+        mobile:  [[59, 0.28, 0.43], [96, 0.27, 0.40], [219, 0.27, 0.40]]
       }
     },
     {
       label: "Шина 1 кГц",
       show: [0.41, 0.505],
       keys: {
-        desktop: [[92, 0.49, 0.44], [122, 0.50, 0.45], [209, 0.50, 0.45]],
-        mobile:  [[73, 0.50, 0.34], [96, 0.50, 0.35], [164, 0.50, 0.35]]
+        desktop: [[140, 0.49, 0.44], [186, 0.50, 0.45], [319, 0.50, 0.45]],
+        mobile:  [[98, 0.50, 0.34], [128, 0.50, 0.35], [219, 0.50, 0.35]]
       }
     },
     {
       label: "3D-лидар 360°",
       show: [0.68, 0.785],
       keys: {
-        desktop: [[150, 0.50, 0.40], [180, 0.50, 0.48], [209, 0.50, 0.48]],
-        mobile:  [[118, 0.50, 0.36], [142, 0.50, 0.47], [164, 0.50, 0.47]]
+        desktop: [[229, 0.50, 0.40], [275, 0.50, 0.48], [319, 0.50, 0.48]],
+        mobile:  [[158, 0.50, 0.36], [190, 0.50, 0.47], [219, 0.50, 0.47]]
       }
     }
   ],
@@ -193,13 +193,15 @@ function createFilmRenderer(cvs) {
     uniform sampler2D u_texA;
     uniform sampler2D u_texB;
     uniform float u_mix;
+    uniform float u_zoom;
     uniform vec2 u_scale;
     uniform vec2 u_offset;
     out vec4 outColor;
     void main() {
-      vec2 tuv = v_uv * u_scale + u_offset;
+      vec2 zuv = (v_uv - 0.5) / max(0.85, u_zoom) + 0.5;
+      vec2 tuv = zuv * u_scale + u_offset;
       vec4 col = texture(u_texA, tuv);
-      if (u_mix > 0.015) {
+      if (u_mix > 0.01) {
         col = mix(col, texture(u_texB, tuv), u_mix);
       }
       vec2 d = v_uv - 0.5;
@@ -233,17 +235,18 @@ function createFilmRenderer(cvs) {
   gl.uniform1i(gl.getUniformLocation(prog, "u_texA"), 0);
   gl.uniform1i(gl.getUniformLocation(prog, "u_texB"), 1);
   const uMix = gl.getUniformLocation(prog, "u_mix");
+  const uZoom = gl.getUniformLocation(prog, "u_zoom");
   const uScale = gl.getUniformLocation(prog, "u_scale");
   const uOffset = gl.getUniformLocation(prog, "u_offset");
 
-  let idA = -1;
-  let idB = -1;
+  let idA = -1, genA = -1;
+  let idB = -1, genB = -1;
   let wA = 0, hA = 0, wB = 0, hB = 0;
 
   return {
     isGL: true,
     setSmoothing() {},
-    draw(entryA, entryB, mix, vw) {
+    draw(entryA, entryB, mix, vw, zoom = 1) {
       gl.viewport(0, 0, cvs.width, cvs.height);
       const sx = vw.cw / (vw.dw || 1);
       const sy = vw.ch / (vw.dh || 1);
@@ -251,7 +254,8 @@ function createFilmRenderer(cvs) {
       const oy = -vw.dy / (vw.dh || 1);
       gl.uniform2f(uScale, sx, sy);
       gl.uniform2f(uOffset, ox, oy);
-      if (entryA.id !== idA) {
+      gl.uniform1f(uZoom, zoom);
+      if (entryA.id !== idA || entryA.gen !== genA) {
         const s = entryA.src;
         const sw = s.width || s.videoWidth || 0;
         const sh = s.height || s.videoHeight || 0;
@@ -264,9 +268,10 @@ function createFilmRenderer(cvs) {
           gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, s);
         }
         idA = entryA.id;
+        genA = entryA.gen;
       }
       if (entryB && mix > 0.015) {
-        if (entryB.id !== idB) {
+        if (entryB.id !== idB || entryB.gen !== genB) {
           const s = entryB.src;
           const sw = s.width || s.videoWidth || 0;
           const sh = s.height || s.videoHeight || 0;
@@ -279,6 +284,7 @@ function createFilmRenderer(cvs) {
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, s);
           }
           idB = entryB.id;
+          genB = entryB.gen;
         }
         gl.uniform1f(uMix, mix);
       } else {
@@ -315,20 +321,41 @@ function mapKeys(p, keys) {
 
 /* ---------- Progressive coarse->fine frame preloader ---------- */
 /* ---------- Bounded Compressed Blob Store + Off-Main-Thread ImageBitmap LRU ---------- */
-const MAX_DECODED = 52;
+const MAX_DECODED = portrait ? 105 : 180;
+const MAX_DECODE_CONC = portrait ? 2 : 3;
 let canImageBitmap = typeof createImageBitmap === "function";
+let canBitmapResize = portrait && canImageBitmap;
+let decodeSeq = 0;
+let lastPrefetchCenter = 0;
+let lastPrefetchDir = 1;
+let activeDecodes = 0;
+const decodeQueue = new Set();
 
 const store = {
   blobs: new Array(SET.count),
   ok: new Uint8Array(SET.count),
   loaded: 0,
-  lru: new Map(),      // frameIndex -> { id, src: ImageBitmap | HTMLImageElement, isBmp }
+  lru: new Map(),      // frameIndex -> { id, gen, src: ImageBitmap | HTMLImageElement, isBmp }
   decoding: new Set(),
   nearestDecoded(i) {
     if (this.lru.has(i)) return i;
     for (let d = 1; d < SET.count; d++) {
       if (i - d >= 0 && this.lru.has(i - d)) return i - d;
       if (i + d < SET.count && this.lru.has(i + d)) return i + d;
+    }
+    return -1;
+  },
+  nearestBelow(i, maxDist = 18) {
+    for (let d = 0; d <= maxDist; d++) {
+      const k = i - d;
+      if (k >= 0 && this.lru.has(k)) return k;
+    }
+    return -1;
+  },
+  nearestAbove(i, maxDist = 18) {
+    for (let d = 0; d <= maxDist; d++) {
+      const k = i + d;
+      if (k < SET.count && this.lru.has(k)) return k;
     }
     return -1;
   }
@@ -342,10 +369,16 @@ function putLru(i, entry) {
   }
   store.lru.set(i, entry);
   while (store.lru.size > MAX_DECODED) {
-    const oldestKey = store.lru.keys().next().value;
-    if (oldestKey === i) break;
-    const old = store.lru.get(oldestKey);
-    store.lru.delete(oldestKey);
+    let worstKey = -1;
+    let worstDist = -1;
+    for (const k of store.lru.keys()) {
+      if (k === i) continue;
+      const d = Math.abs(k - lastPrefetchCenter);
+      if (d > worstDist) { worstDist = d; worstKey = k; }
+    }
+    if (worstKey < 0) break;
+    const old = store.lru.get(worstKey);
+    store.lru.delete(worstKey);
     if (old?.isBmp) try { old.src.close(); } catch {}
   }
 }
@@ -357,8 +390,24 @@ async function decodeToLru(i) {
   try {
     if (canImageBitmap) {
       try {
-        const bmp = await createImageBitmap(blob);
-        putLru(i, { id: i, src: bmp, isBmp: true });
+        let bmp;
+        if (canBitmapResize && view.cw > 0) {
+          const targetW = Math.min(SET.w, Math.max(384, Math.round(view.cw * view.dpr)));
+          const targetH = Math.round((targetW * SET.h) / SET.w);
+          if (targetW < SET.w - 32) {
+            try {
+              bmp = await createImageBitmap(blob, { resizeWidth: targetW, resizeHeight: targetH, resizeQuality: "medium" });
+            } catch {
+              canBitmapResize = false;
+              bmp = await createImageBitmap(blob);
+            }
+          } else {
+            bmp = await createImageBitmap(blob);
+          }
+        } else {
+          bmp = await createImageBitmap(blob);
+        }
+        putLru(i, { id: i, gen: ++decodeSeq, src: bmp, isBmp: true });
         dirty = true;
         return;
       } catch {
@@ -371,7 +420,7 @@ async function decodeToLru(i) {
       img.decoding = "async";
       img.onload = () => {
         URL.revokeObjectURL(objUrl);
-        putLru(i, { id: i, src: img, isBmp: false });
+        putLru(i, { id: i, gen: ++decodeSeq, src: img, isBmp: false });
         dirty = true;
         resolve();
       };
@@ -383,20 +432,61 @@ async function decodeToLru(i) {
   }
 }
 
-function prefetchWindow(center) {
-  if (store.decoding.size >= 2) return;
-  const start = Math.max(0, center - 2);
-  const end = Math.min(SET.count - 1, center + 5);
-  for (let i = center; i <= end && store.decoding.size < 2; i++) {
-    if (store.blobs[i] && !store.lru.has(i) && !store.decoding.has(i)) {
-      decodeToLru(i);
+function pumpDecodeQueue() {
+  while (activeDecodes < MAX_DECODE_CONC && decodeQueue.size > 0) {
+    let best = -1;
+    let bestScore = Infinity;
+    for (const idx of decodeQueue) {
+      if (store.lru.has(idx) || store.decoding.has(idx) || !store.blobs[idx]) {
+        decodeQueue.delete(idx);
+        continue;
+      }
+      const delta = idx - lastPrefetchCenter;
+      const dirPenalty = (lastPrefetchDir >= 0 ? delta < 0 : delta > 0) ? 1.35 : 1.0;
+      const score = Math.abs(delta) * dirPenalty;
+      if (score < bestScore) { bestScore = score; best = idx; }
+    }
+    if (best < 0) break;
+    decodeQueue.delete(best);
+    activeDecodes++;
+    decodeToLru(best).finally(() => {
+      activeDecodes--;
+      pumpDecodeQueue();
+    });
+  }
+}
+
+function requestDecode(i) {
+  if (i < 0 || i >= SET.count || !store.blobs[i] || store.lru.has(i) || store.decoding.has(i)) return;
+  decodeQueue.add(i);
+  pumpDecodeQueue();
+}
+
+function prefetchWindow(center, dir = 1) {
+  lastPrefetchCenter = center;
+  lastPrefetchDir = dir;
+  // Prune stale far-away queued items so scrolling rapidly always decodes immediate targets first
+  if (decodeQueue.size > 28) {
+    for (const q of decodeQueue) {
+      if (Math.abs(q - center) > 36) decodeQueue.delete(q);
     }
   }
-  for (let i = center - 1; i >= start && store.decoding.size < 2; i--) {
-    if (store.blobs[i] && !store.lru.has(i) && !store.decoding.has(i)) {
-      decodeToLru(i);
+  const ahead = dir >= 0 ? 18 : 6;
+  const behind = dir >= 0 ? 6 : 18;
+  const step = dir >= 0 ? 1 : -1;
+  for (let d = 0; d <= ahead; d++) {
+    const idx = center + d * step;
+    if (idx >= 0 && idx < SET.count && store.blobs[idx] && !store.lru.has(idx)) {
+      decodeQueue.add(idx);
     }
   }
+  for (let d = 1; d <= behind; d++) {
+    const idx = center - d * step;
+    if (idx >= 0 && idx < SET.count && store.blobs[idx] && !store.lru.has(idx)) {
+      decodeQueue.add(idx);
+    }
+  }
+  pumpDecodeQueue();
 }
 
 async function loadFrame(i, attempt = 0) {
@@ -460,12 +550,15 @@ async function preloadFrames(onProgress) {
     await decodeToLru(i);
     onProgress(++n / gate.length);
   });
-  // Warm frames 0..16 immediately so start-of-scroll never stalls
+  // Загружаем все WebP-блоки в память и прогреваем начало + опорные кадры pass[2] без блокировки скролла
   (async () => {
-    await runPool(Array.from({ length: Math.min(18, SET.count) }, (_, k) => k), 4, (i) => {
-      if (i < 16) decodeToLru(i);
+    await runPool(Array.from({ length: Math.min(28, SET.count) }, (_, k) => k), 6, (i) => {
+      if (i < 24) requestDecode(i);
     });
-    for (const pass of passes.slice(2)) await runPool(pass, 4);
+    for (let idx = 2; idx < passes.length; idx++) {
+      const pass = passes[idx];
+      await runPool(pass, 8, idx === 2 ? (i) => { requestDecode(i); } : undefined);
+    }
     dirty = true;
   })();
 }
@@ -475,7 +568,7 @@ const view = { cw: 0, ch: 0, dpr: 1, dx: 0, dy: 0, dw: 0, dh: 0, mx: 0, my: 0, s
 function resize() {
   const r = mediaEl.getBoundingClientRect();
   const s = stageEl.getBoundingClientRect();
-  const capDpr = setName === "mobile" ? 1.5 : 1.25;
+  const capDpr = setName === "mobile" ? 1.15 : 1.25;
   view.dpr = Math.min(window.devicePixelRatio || 1, capDpr);
   view.cw = r.width;
   view.ch = r.height;
@@ -500,20 +593,27 @@ function resize() {
 }
 
 let lastDrawn = -1;
-function renderFrames(f) {
+function renderFrames(f, speedZoom = 1) {
   if (!dirty && Math.abs(f - lastDrawn) < 0.002) return;
-  const a = Math.floor(f);
-  const b = Math.min(SET.count - 1, a + 1);
-  const frac = f - a;
-  prefetchWindow(a);
-  const ia = store.nearestDecoded(a);
-  if (ia < 0) return;
-  const entryA = store.lru.get(ia);
-  // Touch LRU MRU order cleanly
-  store.lru.delete(ia);
-  store.lru.set(ia, entryA);
-  const entryB = STORY.blend && frac > 0.02 && b !== a && ia === a && store.lru.has(b) ? store.lru.get(b) : null;
-  filmRenderer.draw(entryA, entryB, entryB ? frac : 0, view);
+  const a = clamp(Math.floor(f), 0, SET.count - 1);
+  const b = Math.min(SET.count - 1, Math.ceil(f));
+  prefetchWindow(Math.round(f), f >= lastDrawn ? 1 : -1);
+  const lo = store.nearestBelow(a, 18);
+  const hi = store.nearestAbove(b, 18);
+  let entryA = lo >= 0 ? store.lru.get(lo) : null;
+  let entryB = hi >= 0 ? store.lru.get(hi) : null;
+  let mix = 0;
+  if (entryA && entryB && hi > lo) {
+    mix = clamp((f - lo) / (hi - lo), 0, 1);
+  } else {
+    const closest = store.nearestDecoded(Math.round(f));
+    if (closest < 0) return;
+    entryA = store.lru.get(closest);
+    entryB = null;
+    mix = 0;
+  }
+  if (!entryA) return;
+  filmRenderer.draw(entryA, STORY.blend ? entryB : null, STORY.blend && mix > 0.015 ? mix : 0, view, speedZoom);
   lastDrawn = f;
   dirty = false;
 }
@@ -562,18 +662,20 @@ let lastFinaleO = -1;
 function updateUI(p, f) {
   STORY.stages.forEach((s, i) => {
     const len = s.to - s.from;
-    const fade = Math.min(0.24 * len, 0.035);
+    const fade = Math.min(0.28 * len, 0.036);
     let o = 0;
-    let y = 24;
+    let y = 22;
     if (p >= s.from && p <= s.to) {
       const inU = s.from === 0 ? 1 : clamp((p - s.from) / fade, 0, 1);
       const outU = clamp((s.to - p) / fade, 0, 1);
       if (inU < 1) {
-        o = easeOut(inU);
-        y = 24 * (1 - easeOut(inU));
+        const e = easeOut(inU);
+        o = e;
+        y = 22 * (1 - e);
       } else if (outU < 1) {
-        o = easeOut(outU);
-        y = -32 * (1 - easeOut(outU));
+        const e = easeOut(outU);
+        o = e;
+        y = -26 * (1 - e);
       } else {
         o = 1;
         y = 0;
@@ -584,8 +686,11 @@ function updateUI(p, f) {
     copyHidden[i] = vis ? 0 : 1;
     if (reduced) y = 0;
     const el = copyItems[i];
+    el.classList.toggle("is-shown", vis);
     el.style.opacity = vis ? o.toFixed(3) : "0";
-    if (vis) el.style.transform = `translate3d(0, ${y.toFixed(2)}px, 0)`;
+    if (vis) {
+      el.style.transform = `translate3d(0, ${y.toFixed(2)}px, 0)`;
+    }
     el.style.visibility = vis ? "visible" : "hidden";
   });
 
@@ -611,6 +716,7 @@ function updateUI(p, f) {
   if (Math.abs(fo - lastFinaleO) > 0.002 || (fo === 0 && lastFinaleO !== 0) || (fo === 1 && lastFinaleO !== 1)) {
     lastFinaleO = fo;
     finaleEl.style.opacity = fo.toFixed(3);
+    finaleEl.style.setProperty("--fo", fo.toFixed(3));
     finaleEl.classList.toggle("is-interactive", fo > 0.65);
   }
 
@@ -709,10 +815,13 @@ storyEl.style.height = `calc(var(--vh) * ${STORY.scrollLength})`;
 ScrollTrigger.config({ ignoreMobileResize: true });
 
 let lenis = null;
+let inputMode = "wheel";
 if (!reduced) {
   lenis = new Lenis({ autoRaf: false, lerp: 0.12, smoothWheel: true, syncTouch: false });
   lenis.on("scroll", ScrollTrigger.update);
   window.__lenis = lenis;
+  addEventListener("wheel", () => { inputMode = "wheel"; }, { passive: true });
+  addEventListener("touchstart", () => { inputMode = "touch"; }, { passive: true });
 }
 
 let target = 0;
@@ -738,7 +847,7 @@ function progressToY(p) {
 
 function goToStage(i) {
   const s = STORY.stages[i];
-  const fade = Math.min(0.24 * (s.to - s.from), 0.035);
+  const fade = Math.min(0.28 * (s.to - s.from), 0.036);
   const p = s.from === 0 ? 0 : s.from + fade + 0.012;
   const y = progressToY(p);
   if (lenis) lenis.scrollTo(y, { duration: 1.5, easing: (t) => 1 - Math.pow(1 - t, 4) });
@@ -777,6 +886,19 @@ function wireNavLinks() {
   };
   addEventListener("scroll", updateCurrentNav, { passive: true });
   updateCurrentNav();
+
+  // Плавное появление карточек технического паспорта (#reading) при входе в экран
+  const readingEl = $("#reading");
+  if (readingEl && !reduced) {
+    readingEl.classList.add("is-entering");
+    const ro = new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) {
+        readingEl.classList.remove("is-entering");
+        ro.disconnect();
+      }
+    }, { threshold: 0.08 });
+    ro.observe(readingEl);
+  }
 }
 wireNavLinks();
 
@@ -793,12 +915,15 @@ gsap.ticker.add((time, deltaMs) => {
   const dt = Math.min(0.05, deltaMs / 1000);
   if (lenis) lenis.raf(time * 1000);
   if (!ready) return;
-  if (!storyInView && Math.abs(target - current) < 1e-4) return;
+  if (!storyInView && Math.abs(target - current) < 1e-5) return;
 
-  const rate = lenis ? STORY.smoothing.wheel : STORY.smoothing.touch;
-  const k = reduced ? 1 : 1 - Math.exp(-rate * dt);
-  current += (target - current) * k;
-  if (Math.abs(target - current) < 1e-5) current = target;
+  if (reduced || (lenis && inputMode === "wheel")) {
+    current = target;
+  } else {
+    const k = 1 - Math.exp(-STORY.smoothing.touch * dt);
+    current += (target - current) * k;
+    if (Math.abs(target - current) < 1e-5) current = target;
+  }
 
   let t = mapKeys(current, STORY.timeKeys);
   if (reduced) {
@@ -815,8 +940,9 @@ gsap.ticker.add((time, deltaMs) => {
     stats.maxSpeed = Math.max(stats.maxSpeed, (Math.abs(dFilm) * (SET.count - 1)) / dt);
   }
   const f = t * (SET.count - 1);
+  const speedZoom = reduced ? 1 : 1 + clamp(Math.abs(dFilm) * 0.42, 0, 0.016);
 
-  renderFrames(f);
+  renderFrames(f, speedZoom);
   par.x += (par.tx - par.x) * (1 - Math.exp(-4 * dt));
   par.y += (par.ty - par.y) * (1 - Math.exp(-4 * dt));
   if (Math.abs(par.x - lastUiPx) > 0.04 || Math.abs(par.y - lastUiPy) > 0.04) {
@@ -861,6 +987,7 @@ resize();
   root.classList.add("story-ready");
   $("#preloader")?.classList.add("is-done");
   ScrollTrigger.refresh();
+  window.dispatchEvent(new CustomEvent("story:ready"));
 })();
 
 window.__story = {

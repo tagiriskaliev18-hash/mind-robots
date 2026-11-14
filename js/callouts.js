@@ -15,6 +15,27 @@ export function createCallouts({ els, svg, isPhone, getSafe }) {
     return { g, path, dot };
   });
   let specs = [];
+  const cachedH = new Float32Array(els.length);
+  let cachedW = 190;
+  let cachedSvgLeft = 0;
+  let cachedSvgTop = 0;
+  let layoutDirty = true;
+
+  function measureCache() {
+    const phone = isPhone();
+    const w = innerWidth;
+    const widthCss = phone ? "min(156px, 44vw)" : "min(210px, 18vw)";
+    cachedW = phone ? Math.min(156, w * 0.44) : Math.min(210, w * 0.18);
+    const svgRect = svg.getBoundingClientRect();
+    cachedSvgLeft = svgRect.left;
+    cachedSvgTop = svgRect.top;
+    els.forEach((el, i) => {
+      el.style.width = widthCss;
+      cachedH[i] = el.hidden ? 64 : (el.offsetHeight || 64);
+    });
+    layoutDirty = false;
+  }
+  addEventListener("resize", () => { layoutDirty = true; }, { passive: true });
 
   function show(list, findPart) {
     specs = list.filter((c) => !(c.desk && isPhone())).slice(0, els.length).map((c) => ({ ...c, partRef: findPart(c.part) }));
@@ -24,6 +45,7 @@ export function createCallouts({ els, svg, isPhone, getSafe }) {
       if (!c) return;
       el.innerHTML = `<p class="idx">${c.title}</p><p class="fig">${c.fig}${c.unit ? `<span>${c.unit}</span>` : ""}</p><p class="note">${c.note}</p>`;
     });
+    layoutDirty = true;
   }
 
   function hide() {
@@ -33,6 +55,7 @@ export function createCallouts({ els, svg, isPhone, getSafe }) {
   }
 
   function update(camera, alpha) {
+    if (layoutDirty) measureCache();
     const w = innerWidth, h = innerHeight, phone = isPhone();
     const safe = getSafe();
     const gutter = phone ? 16 : Math.max(28, w * 0.04);
@@ -72,12 +95,11 @@ export function createCallouts({ els, svg, isPhone, getSafe }) {
       let cursor = safe.top;
       for (const it of col) {
         const el = it.el;
-        el.style.width = phone ? "min(156px, 44vw)" : "min(210px, 18vw)";
         el.style.left = side === "left" ? gutter + "px" : "auto";
         el.style.right = side === "right" ? gutter + "px" : "auto";
         const top = phone ? cursor : Math.max(cursor, Math.round(it.y - 24));
         el.style.top = top + "px";
-        it.h = el.offsetHeight;
+        it.h = cachedH[it.i];
         it.top = top;
         cursor = top + it.h + 16;
       }
@@ -95,7 +117,6 @@ export function createCallouts({ els, svg, isPhone, getSafe }) {
       }
     }
 
-    const svgRect = svg.getBoundingClientRect();
     for (const side of ["left", "right"]) {
       for (const it of cols[side]) {
         const L = lines[it.i];
@@ -105,9 +126,8 @@ export function createCallouts({ els, svg, isPhone, getSafe }) {
           continue;
         }
         it.el.style.opacity = String(alpha);
-        const r = it.el.getBoundingClientRect();
-        const x1 = (side === "left" ? r.right : r.left) - svgRect.left;
-        const y1 = r.top - svgRect.top + 0.5;
+        const x1 = (side === "left" ? gutter + cachedW : w - gutter - cachedW) - cachedSvgLeft;
+        const y1 = it.top - cachedSvgTop + 0.5;
         const elbow = side === "left" ? Math.max(x1 + 10, it.x - 18) : Math.min(x1 - 10, it.x + 18);
         L.path.setAttribute("points", `${it.x.toFixed(1)},${it.y.toFixed(1)} ${elbow.toFixed(1)},${it.y.toFixed(1)} ${elbow.toFixed(1)},${y1.toFixed(1)} ${x1.toFixed(1)},${y1.toFixed(1)}`);
         L.dot.setAttribute("cx", it.x.toFixed(1));

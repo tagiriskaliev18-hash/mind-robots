@@ -226,7 +226,8 @@ html.mode-video .stage__video {
   bottom: 0;
   width: 100%;
   opacity: 0;
-  transform: translate3d(0, 24px, 0);
+  transform: translate3d(0, 22px, 0);
+  will-change: transform, opacity;
   text-shadow: 0 2px 26px rgba(5, 5, 10, 0.65);
 }
 
@@ -237,12 +238,34 @@ html.mode-video .stage__video {
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--cyan);
-  opacity: 0.92;
+  opacity: 0;
+  transform: translate3d(0, 8px, 0);
+  transition: transform 0.52s var(--ease-out), opacity 0.42s var(--ease-out);
 }
 
 .copy__title {
   margin: 0;
   line-height: 0.93;
+  opacity: 0.08;
+  transform: translate3d(0, 10px, 0);
+  transition: transform 0.6s var(--ease-out) 0.04s, opacity 0.48s var(--ease-out) 0.04s;
+}
+
+.copy__sub {
+  margin: 14px 0 0;
+  max-width: 34ch;
+  font: 400 clamp(13.5px, 1.05vw, 15.5px)/1.48 var(--sans);
+  color: var(--ink-dim);
+  opacity: 0;
+  transform: translate3d(0, 14px, 0);
+  transition: transform 0.68s var(--ease-out) 0.09s, opacity 0.55s var(--ease-out) 0.09s;
+}
+
+.copy__item.is-shown .copy__kicker,
+.copy__item.is-shown .copy__title,
+.copy__item.is-shown .copy__sub {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
 }
 
 .copy__title .caps {
@@ -271,11 +294,8 @@ html.mode-video .stage__video {
   color: transparent;
 }
 
-.copy__sub {
-  margin: 14px 0 0;
+.copy__item .copy__sub {
   max-width: 34ch;
-  font: 400 clamp(13.5px, 1.05vw, 15.5px)/1.48 var(--sans);
-  color: var(--ink-dim);
 }
 
 /* ---------- Progress dots (right rail) ---------- */
@@ -467,6 +487,15 @@ html.mode-video .stage__video {
   gap: 16px;
   padding: 24px;
   background: radial-gradient(82% 64% at 50% 50%, rgba(9, 9, 15, 0.9), #050509 82%);
+}
+
+.finale > * {
+  transform: translate3d(0, calc((1 - var(--fo, 0)) * 22px), 0);
+  opacity: clamp(0, var(--fo, 0) * 1.25, 1);
+}
+
+.finale__cta {
+  transform: translate3d(0, calc((1 - var(--fo, 0)) * 34px), 0);
 }
 
 .finale.is-interactive {
@@ -674,5 +703,12 @@ html.is-still .preloader {
   }
   .copy__item {
     transform: none !important;
+  }
+  .copy__kicker,
+  .copy__title,
+  .copy__sub {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
   }
 }

@@ -17,6 +17,7 @@ window.__mind = app; // хук для critic-скрипта
 
 // Экранные прямоугольники деталей внутри .live-pin — critic проверяет, что карточки не лежат на объекте.
 app.partRects = () => {
+  if (!camera || !app.parts.length) return [];
   const pin = $("livePin")?.getBoundingClientRect() || { left: 0, top: 0 };
   return app.parts.map((p) => {
     const b = p.mesh.geometry.boundingBox;
@@ -37,21 +38,33 @@ app.partRects = () => {
 };
 addEventListener("error", (e) => app.errors.push(String(e.message)));
 
-const stage = createStage($("stage"));
-app.stage = stage;
-const { scene, camera } = stage;
-const rig = createRig(camera, $("stage"), still);
-const title = createTitle(scene, gsap, still);
-const mats = makeMaterials();
-const callouts = createCallouts({
-  els: [$("c0"), $("c1"), $("c2")],
-  svg: $("leaders"),
-  isPhone,
-  getSafe: () => ({
-    top: Math.round($("tabs").offsetTop + $("tabs").offsetHeight + (isPhone() ? 14 : innerHeight * 0.06)),
-    bottom: innerHeight - 78
-  })
-});
+let stage = null, scene = null, camera = null, rig = null, title = null, mats = null, callouts = null;
+function initStage() {
+  if (stage) return;
+  stage = createStage($("stage"));
+  app.stage = stage;
+  ({ scene, camera } = stage);
+  rig = createRig(camera, $("stage"), still);
+  title = createTitle(scene, gsap, still);
+  mats = makeMaterials();
+  callouts = createCallouts({
+    els: [$("c0"), $("c1"), $("c2")],
+    svg: $("leaders"),
+    isPhone,
+    getSafe: () => ({
+      top: Math.round($("tabs").offsetTop + $("tabs").offsetHeight + (isPhone() ? 14 : innerHeight * 0.06)),
+      bottom: innerHeight - 78
+    })
+  });
+}
+
+function syncLampHalos() {
+  if (!mats) return;
+  const op = 0.72 * Math.min(1, mats.led.emissiveIntensity / (QUALITY.ledEmissive || 1));
+  for (const l of app.lamps) {
+    if (l.userData.halo) l.userData.halo.material.opacity = op;
+  }
+}
 
 // ---------- tabs + scroll: одна дорожка в Акте II, одна камера ----------
 const tabsEl = $("tabs");
@@ -66,21 +79,44 @@ TABS.forEach((t, i) => {
 $("drive").style.height = (TABS.length + 1) * 100 + "svh";
 let scrollLock = false;
 let liveInView = false;
+let introPending = false;
+let bootStarted = false;
+let ensureBoot = () => {};
 let rafId = null;
 let lastCamSig = NaN;
 let lastCoordsStr = "";
 
 function wakeLoop() {
-  if (!rafId) rafId = requestAnimationFrame(tick);
+  if (!rafId) {
+    prev = performance.now();
+    fpsAcc = 0;
+    fpsN = 0;
+    rafId = requestAnimationFrame(tick);
+  }
 }
 
 new IntersectionObserver((entries) => {
+  const wasInView = liveInView;
   liveInView = entries.some((e) => e.isIntersecting);
-  if (liveInView) wakeLoop();
-}, { rootMargin: "900px 0px" }).observe($("drive"));
+  if (liveInView) {
+    ensureBoot();
+    if (!wasInView && introPending && app.parts.length) {
+      const nearTop = scrollY < $("drive").offsetTop + innerHeight * 0.48;
+      introPending = false;
+      if (nearTop) animateIntroEntrance();
+      else {
+        mats.led.emissiveIntensity = QUALITY.ledEmissive;
+        syncLampHalos();
+      }
+    }
+    wakeLoop();
+  }
+}, { rootMargin: "0px", threshold: 0.01 }).observe($("drive"));
 
 $("stage")?.addEventListener("pointerdown", wakeLoop, { passive: true });
 $("stage")?.addEventListener("wheel", wakeLoop, { passive: true });
+addEventListener("stage:dirty", () => { if (liveInView) wakeLoop(); });
+addEventListener("resize", () => { if (liveInView) wakeLoop(); }, { passive: true });
 
 function scrollToProgress(p, immediate = false) {
   const drive = $("drive");
@@ -120,6 +156,7 @@ function findPart(token) {
 }
 
 function enterHero(fromScroll) {
+  initStage();
   app.mode = "hero";
   app.tab = -1;
   app.since = 0;
@@ -134,14 +171,20 @@ function enterHero(fromScroll) {
 }
 
 app.scrollToLiveHero = () => {
+  initStage();
+  ensureBoot();
   liveInView = true;
+  introPending = false;
   scrollToProgress(0, true);
-  enterHero(true);
+  if (app.parts.length) enterHero(true);
+  mats.led.emissiveIntensity = QUALITY.ledEmissive;
+  syncLampHalos();
   stage.render(0.016);
   wakeLoop();
 };
 
 function applyTab(i, fromScroll) {
+  initStage();
   const tab = TABS[i];
   if (app.mode === "hero" || app.mode === "intro") title.set(false);
   app.mode = "tab";
@@ -191,28 +234,8 @@ function bindScroll() {
   });
 }
 
-// ---------- intro: готовность 3D-сцены к моменту входа в Акт II ----------
-function playIntro() {
-  document.documentElement.classList.add("is-ready");
+function animateIntroEntrance() {
   const heroPhoneMul = isPhone() ? (HERO.phoneRadius ?? 1.18) : 1;
-  if (still || !gsap || !liveInView) {
-    rig.state.locked = false;
-    rig.setTarget(HERO, isPhone(), heroPhoneMul);
-    Object.assign(rig.state, { radius: rig.state.target.radius, phi: HERO.phi, theta: HERO.theta });
-    rig.state.look.copy(rig.state.target.look);
-    rig.update(0.016);
-    app.mode = "hero";
-    app.tab = -1;
-    app.since = 0;
-    app.err = 0;
-    setGoals(app.parts, null);
-    callouts.hide();
-    title.set(true);
-    mats.led.emissiveIntensity = QUALITY.ledEmissive;
-    stage.render(0.016);
-    bindScroll();
-    return;
-  }
   app.mode = "intro";
   wakeLoop();
   const s = rig.state;
@@ -221,6 +244,7 @@ function playIntro() {
   s.look.fromArray(INTRO.look);
   rig.setTarget(HERO, isPhone(), heroPhoneMul);
   mats.led.emissiveIntensity = 0;
+  syncLampHalos();
   const look = { x: INTRO.look[0], y: INTRO.look[1], z: INTRO.look[2] };
   const targetR = s.target.radius;
   const targetLook = s.target.look.clone();
@@ -228,6 +252,7 @@ function playIntro() {
     onComplete: () => {
       s.locked = false;
       app.mode = "hero";
+      syncLampHalos();
       stage.render(0.016);
       bindScroll();
     }
@@ -241,19 +266,68 @@ function playIntro() {
       ease: "expo.inOut",
       onUpdate: () => s.look.set(look.x, look.y, look.z)
     }, 0)
-    .to(mats.led, { emissiveIntensity: QUALITY.ledEmissive, duration: 0.9, ease: "power2.out" }, 0.9)
-    .add(() => title.set(true), 1.3)
-    .fromTo("#hud", { opacity: 0.01 }, { opacity: 1, duration: 0.8, ease: "power2.out" }, 1.1);
+    .to(mats.led, { emissiveIntensity: QUALITY.ledEmissive, duration: 0.85, ease: "power2.out", onUpdate: syncLampHalos }, 0.65)
+    .add(() => title.set(true), 0.95)
+    .fromTo("#hud", { opacity: 0.01 }, { opacity: 1, duration: 0.75, ease: "power2.out" }, 0.85);
+}
+
+// ---------- intro: готовность 3D-сцены к моменту входа в Акт II ----------
+function playIntro() {
+  document.documentElement.classList.add("is-ready");
+  const heroPhoneMul = isPhone() ? (HERO.phoneRadius ?? 1.18) : 1;
+  if (still || !gsap) {
+    rig.state.locked = false;
+    rig.setTarget(HERO, isPhone(), heroPhoneMul);
+    Object.assign(rig.state, { radius: rig.state.target.radius, phi: HERO.phi, theta: HERO.theta });
+    rig.state.look.copy(rig.state.target.look);
+    rig.update(0.016);
+    app.mode = "hero";
+    app.tab = -1;
+    app.since = 0;
+    app.err = 0;
+    setGoals(app.parts, null);
+    callouts.hide();
+    title.set(true);
+    mats.led.emissiveIntensity = QUALITY.ledEmissive;
+    syncLampHalos();
+    stage.render(0.016);
+    bindScroll();
+    return;
+  }
+  if (!liveInView) {
+    // Заранее готовим камеру на входной точке INTRO и ждём реального появления #drive в кадре
+    introPending = true;
+    rig.state.locked = false;
+    rig.setTarget(INTRO, isPhone(), 1);
+    Object.assign(rig.state, { radius: INTRO.radius, phi: INTRO.phi, theta: INTRO.theta });
+    rig.state.look.fromArray(INTRO.look);
+    rig.update(0.016);
+    app.mode = "hero";
+    app.tab = -1;
+    app.since = 0;
+    app.err = 0;
+    setGoals(app.parts, null);
+    callouts.hide();
+    title.set(false);
+    mats.led.emissiveIntensity = 0;
+    syncLampHalos();
+    stage.render(0.016);
+    bindScroll();
+    return;
+  }
+  animateIntroEntrance();
 }
 
 // ---------- boot ----------
 async function boot() {
+  initStage();
+  await new Promise((r) => setTimeout(r, 0));
   let model;
   try {
     if (!PRODUCT.glb) throw new Error("no glb");
     model = await loadModel(PRODUCT.glb, stage.renderer, mats, (f) => {
       if ($("loader-bar")) $("loader-bar").style.width = Math.round(f * 70) + "%";
-    });
+    }, still);
   } catch (err) {
     console.warn("model: placeholder", err.message);
     model = placeholderModel(mats);
@@ -293,8 +367,8 @@ function tick(now) {
   const dt = Math.min(0.033, Math.max(0.001, raw));
   prev = now;
 
-  // Completely halt Act II WebGL RAF while offscreen during Act I (#story)
-  if (!liveInView && app.mode !== "intro" && app.err < 0.005) {
+  // Completely halt Act II WebGL RAF whenever #drive is offscreen (during #story or #reading)
+  if (!liveInView && app.mode !== "intro") {
     return;
   }
 
@@ -307,9 +381,11 @@ function tick(now) {
   }
   app.since += dt;
   for (const p of app.parts) springStep(p, dt, still);
+  const haloOp = mats ? 0.72 * Math.min(1, mats.led.emissiveIntensity / (QUALITY.ledEmissive || 1)) : 0.72;
   for (const l of app.lamps) {
     const p = l.userData.part;
     l.position.copy(p.mesh.position).add(p.centerLocal).add(l.userData.local);
+    if (l.userData.halo) l.userData.halo.material.opacity = haloOp;
   }
   const camErr = rig.update(dt);
   title.update(camera, HERO.look[1] + 0.11, isPhone());
@@ -337,26 +413,49 @@ function tick(now) {
     }
   }
   stage.render(dt);
+  app.triangles = stage.renderer.info.render.triangles;
   stage.adapt(dt);
+
+  const labelSettled = app.mode !== "tab" || Math.abs((app.err < MOTION.labelShowError || app.since > MOTION.labelShowAfter ? 1 : 0) - app.label) < 0.002;
+  if (app.mode !== "intro" && !moved && app.err < 0.0008 && labelSettled && app.since >= 1.6) {
+    return;
+  }
   rafId = requestAnimationFrame(tick);
 }
 
-// Defer heavy GLB decode/compile briefly so Act I paints frame 1 at 60 FPS with zero boot stall
+// Ленивый старт Акта II после первого кадра Акта I, при скролле или клике — ноль нагрузки на старт Акта I
 function scheduleBoot() {
-  let started = false;
-  const go = () => {
-    if (started) return;
-    started = true;
+  ensureBoot = () => {
+    if (bootStarted) return;
+    bootStarted = true;
     boot().catch((err) => {
       console.error(err);
       $("fail").hidden = false;
     });
   };
-  const waitStory = () => {
-    if (window.__story?.state()?.ready || liveInView) { go(); return; }
-    setTimeout(waitStory, 80);
+  if (still || liveInView) {
+    ensureBoot();
+    return;
+  }
+  const triggerLater = () => setTimeout(() => ensureBoot(), 400);
+  if (window.__story?.state()?.ready) triggerLater();
+  else addEventListener("story:ready", triggerLater, { once: true });
+
+  const onScroll = () => {
+    const storyEl = $("story");
+    const thresh = storyEl ? storyEl.offsetTop + Math.min(innerHeight * 0.65, storyEl.offsetHeight * 0.12) : innerHeight * 0.65;
+    if (scrollY >= thresh || liveInView) {
+      removeEventListener("scroll", onScroll);
+      ensureBoot();
+    }
   };
-  setTimeout(go, 950);
-  setTimeout(waitStory, 60);
+  addEventListener("scroll", onScroll, { passive: true });
+  $("navLive")?.addEventListener("click", () => ensureBoot(), { once: true });
+  $("finaleToLive")?.addEventListener("click", () => ensureBoot(), { once: true });
+  // Запасной ленивый старт на случай если Акт I ещё грузится дольше 2.8с
+  const idle = window.requestIdleCallback || ((cb) => setTimeout(cb, 2800));
+  setTimeout(() => idle(() => {
+    if (!bootStarted && document.visibilityState === "visible") ensureBoot();
+  }), 2800);
 }
 scheduleBoot();

@@ -31,8 +31,8 @@ import { EffectComposer, RenderPass, EffectPass, BloomEffect, SMAAEffect, SMAAPr
 
 const params = new URLSearchParams(location.search);
 const MODE = params.get("mode") === "mobile" ? "mobile" : "desktop";
-const W = MODE === "mobile" ? 720 : 1920;
-const H = MODE === "mobile" ? 1280 : 1080;
+const W = MODE === "mobile" ? 648 : 1600;
+const H = MODE === "mobile" ? 1152 : 900;
 
 const canvas = document.getElementById("c");
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: "high-performance", preserveDrawingBuffer: true });
@@ -247,13 +247,13 @@ for (let i = 0; i < 16; i++) {
   envGroup.add(m);
 }
 
-// Perimeter architectural light monoliths (strictly >= 3.2m behind/flanking — ZERO lens obstruction!)
-const pillarMat = new THREE.MeshStandardMaterial({ color: 0x10131d, roughness: 0.56, metalness: 0.7 });
+// Perimeter architectural light monoliths (wide framing — ZERO slabs crossing directly behind the head silhouette!)
+const pillarMat = new THREE.MeshStandardMaterial({ color: 0x070910, roughness: 0.78, metalness: 0.55 });
 const slitCyan = new THREE.MeshBasicMaterial({ color: 0x00f5ff, toneMapped: false });
 const slitIndigo = new THREE.MeshBasicMaterial({ color: 0x4b3bff, toneMapped: false });
 const pillarPositions = [
-  [-2.6, 0, -2.5, 0.35, 0], [-3.2, 0, -0.9, 0.12, 1], [-2.7, 0, 1.9, -0.35, 0],
-  [-1.2, 0, -3.3, 0.65, 1], [0.8, 0, -3.2, -0.55, 0], [2.2, 0, -2.8, -0.30, 1]
+  [-3.2, 0, -2.6, 0.32, 0], [-2.9, 0, 2.1, -0.35, 1],
+  [2.6, 0, -3.1, -0.45, 0], [3.3, 0, -0.6, -0.22, 1]
 ];
 for (const [x, y, z, ry, kind] of pillarPositions) {
   const pGroup = new THREE.Group();
@@ -431,28 +431,28 @@ const internalBay = new THREE.Group();
 internalBay.visible = false;
 scene.add(internalBay);
 
-// Sleek cylindrical titanium optical bore starting at x = -0.01 -> -0.66
-const tunnelMat = new THREE.MeshStandardMaterial({ color: 0x090b12, roughness: 0.34, metalness: 0.9, side: THREE.BackSide });
-const tunnel = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.14, 0.66, 48, 1, true), tunnelMat);
+// Sleek cylindrical titanium optical bore starting at x = 0.01 -> -0.69 (strictly sealed <= 0.092m radius)
+const tunnelMat = new THREE.MeshStandardMaterial({ color: 0x050812, roughness: 0.42, metalness: 0.78, side: THREE.BackSide, transparent: true, opacity: 0 });
+const tunnel = new THREE.Mesh(new THREE.CylinderGeometry(0.072, 0.092, 0.70, 64, 1, true), tunnelMat);
 tunnel.rotation.z = Math.PI / 2;
 tunnel.position.set(-0.34, 1.17, 0);
 internalBay.add(tunnel);
 
-const ribMat = new THREE.MeshStandardMaterial({ color: 0x1b2131, roughness: 0.28, metalness: 0.92 });
-const fiberCyan = new THREE.MeshBasicMaterial({ color: 0x00f5ff, toneMapped: false });
-const fiberViolet = new THREE.MeshBasicMaterial({ color: 0x7b2ff7, toneMapped: false });
-const opticGold = new THREE.MeshStandardMaterial({ color: 0xe3a857, roughness: 0.22, metalness: 0.95 });
+const ribMat = new THREE.MeshStandardMaterial({ color: 0x161d2c, roughness: 0.32, metalness: 0.90, transparent: true, opacity: 0 });
+const fiberCyan = new THREE.MeshBasicMaterial({ color: 0x00f5ff, toneMapped: false, transparent: true, opacity: 0 });
+const fiberViolet = new THREE.MeshBasicMaterial({ color: 0x7b2ff7, toneMapped: false, transparent: true, opacity: 0 });
+const opticGold = new THREE.MeshStandardMaterial({ color: 0xe3a857, roughness: 0.22, metalness: 0.95, transparent: true, opacity: 0 });
 
 for (let i = 0; i < 8; i++) {
-  const xPos = -0.03 - i * 0.075;
-  const r = 0.052 + i * 0.010;
-  const ring = new THREE.Mesh(new THREE.TorusGeometry(r, 0.004, 10, 48), ribMat);
+  const xPos = -0.02 - i * 0.075;
+  const r = 0.068 + i * 0.0022;
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(r, 0.0032, 10, 56), ribMat);
   ring.rotation.y = Math.PI / 2;
   ring.position.set(xPos, 1.17, 0);
   internalBay.add(ring);
 
   const accent = new THREE.Mesh(
-    new THREE.TorusGeometry(r - 0.0038, 0.0012, 6, 48),
+    new THREE.TorusGeometry(r - 0.0030, 0.0011, 6, 56),
     i % 2 === 0 ? fiberCyan : fiberViolet
   );
   accent.rotation.y = Math.PI / 2;
@@ -463,55 +463,74 @@ for (let i = 0; i < 8; i++) {
 // Coaxial iris rings inside tunnel (never offset near lens edges)
 const lidarGimbal = new THREE.Group();
 lidarGimbal.position.set(-0.22, 1.17, 0);
-const lidarRing = new THREE.Mesh(new THREE.TorusGeometry(0.068, 0.0014, 8, 48), opticGold);
+const lidarRing = new THREE.Mesh(new THREE.TorusGeometry(0.056, 0.0014, 8, 56), opticGold);
 lidarRing.rotation.y = Math.PI / 2;
-const lidarAccent = new THREE.Mesh(new THREE.TorusGeometry(0.062, 0.0012, 8, 48), fiberCyan);
+const lidarAccent = new THREE.Mesh(new THREE.TorusGeometry(0.050, 0.0012, 8, 56), fiberCyan);
 lidarAccent.rotation.y = Math.PI / 2;
 lidarGimbal.add(lidarRing, lidarAccent);
 internalBay.add(lidarGimbal);
 
-// Climax Centerpiece: Apple Silicon Macro Obsidian Die & Lithography Reticle (x = -0.60, y = 1.17, z = 0)
+// Climax Centerpiece: Apple Silicon Macro Obsidian Die & 3D Extruded Chiplets (x = -0.60, y = 1.17, z = 0)
 const coreGroup = new THREE.Group();
 coreGroup.position.set(-0.60, 1.17, 0);
 coreGroup.rotation.y = Math.PI / 2;
 internalBay.add(coreGroup);
 
+const carrierMat = new THREE.MeshStandardMaterial({ color: 0x03050a, roughness: 0.92, metalness: 0.08, transparent: true, opacity: 0 });
 const carrierPlate = new THREE.Mesh(
-  new THREE.CylinderGeometry(0.42, 0.42, 0.014, 64),
-  new THREE.MeshStandardMaterial({ color: 0x0b0e17, roughness: 0.42, metalness: 0.86 })
+  new THREE.CylinderGeometry(0.090, 0.090, 0.014, 64),
+  carrierMat
 );
 carrierPlate.rotation.x = Math.PI / 2;
-carrierPlate.position.z = -0.01;
+carrierPlate.position.z = -0.012;
 coreGroup.add(carrierPlate);
 
-const heatsinkPlate = new THREE.Mesh(new THREE.CylinderGeometry(0.185, 0.185, 0.012, 64), ribMat);
+const heatsinkMat = new THREE.MeshStandardMaterial({ color: 0x050811, roughness: 0.78, metalness: 0.25, transparent: true, opacity: 0 });
+const heatsinkPlate = new THREE.Mesh(new THREE.CylinderGeometry(0.087, 0.087, 0.010, 64), heatsinkMat);
 heatsinkPlate.rotation.x = Math.PI / 2;
 coreGroup.add(heatsinkPlate);
 
 const waferTex = makeSiliconWaferTex();
-const waferDisc = new THREE.Mesh(
-  new THREE.CircleGeometry(0.175, 64),
-  new THREE.MeshBasicMaterial({ map: waferTex, transparent: true, toneMapped: false })
-);
+const waferMat = new THREE.MeshBasicMaterial({ map: waferTex, transparent: true, opacity: 0, toneMapped: false });
+const waferDisc = new THREE.Mesh(new THREE.CircleGeometry(0.086, 64), waferMat);
 waferDisc.position.z = 0.008;
 coreGroup.add(waferDisc);
 
-const dieBezel = new THREE.Mesh(new THREE.BoxGeometry(0.068, 0.068, 0.012), new THREE.MeshStandardMaterial({ color: 0xc29248, roughness: 0.24, metalness: 0.92 }));
+const dieBezel = new THREE.Mesh(new THREE.BoxGeometry(0.068, 0.068, 0.012), opticGold);
 coreGroup.add(dieBezel);
 
-const dieBase = new THREE.Mesh(new THREE.BoxGeometry(0.056, 0.056, 0.015), new THREE.MeshPhysicalMaterial({ color: 0x04070e, roughness: 0.08, metalness: 0.95, clearcoat: 1.0 }));
+const dieBaseMat = new THREE.MeshStandardMaterial({ color: 0x03060c, roughness: 0.42, metalness: 0.65, transparent: true, opacity: 0 });
+const dieBase = new THREE.Mesh(new THREE.BoxGeometry(0.056, 0.056, 0.015), dieBaseMat);
 coreGroup.add(dieBase);
 
+// True 3D extruded neural chiplets around macro silicon center
+const chipletGeo = new THREE.BoxGeometry(0.0062, 0.0062, 0.0045);
+const chipletCyanMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(0x00f5ff).multiplyScalar(1.08), toneMapped: false, transparent: true, opacity: 0 });
+const chipletDarkMat = new THREE.MeshStandardMaterial({ color: 0x16223a, roughness: 0.2, metalness: 0.9, transparent: true, opacity: 0 });
+for (let r = -3; r <= 3; r++) {
+  for (let c = -3; c <= 3; c++) {
+    if (Math.abs(r) <= 1 && Math.abs(c) <= 1) continue;
+    const chip = new THREE.Mesh(chipletGeo, (r + c) % 2 === 0 ? chipletDarkMat : chipletCyanMat);
+    chip.position.set(c * 0.0078, r * 0.0078, 0.0095);
+    coreGroup.add(chip);
+  }
+}
+
+const dieCoreGridMat = new THREE.MeshBasicMaterial({ map: waferTex, blending: THREE.AdditiveBlending, transparent: true, opacity: 0, toneMapped: false });
 const dieCoreGrid = new THREE.Mesh(
-  new THREE.PlaneGeometry(0.044, 0.044),
-  new THREE.MeshBasicMaterial({ map: waferTex, blending: THREE.AdditiveBlending, transparent: true, opacity: 0.95, toneMapped: false })
+  new THREE.PlaneGeometry(0.042, 0.042),
+  dieCoreGridMat
 );
-dieCoreGrid.position.z = 0.009;
+dieCoreGrid.position.z = 0.011;
 coreGroup.add(dieCoreGrid);
 
-const halo1 = new THREE.Mesh(new THREE.TorusGeometry(0.062, 0.0010, 8, 72), fiberCyan);
-const halo2 = new THREE.Mesh(new THREE.TorusGeometry(0.088, 0.0010, 8, 72), fiberViolet);
-coreGroup.add(halo1, halo2);
+const halo1 = new THREE.Mesh(new THREE.TorusGeometry(0.056, 0.0012, 8, 72), fiberCyan);
+halo1.position.z = 0.022;
+const halo2 = new THREE.Mesh(new THREE.TorusGeometry(0.070, 0.0011, 8, 72), fiberViolet);
+halo2.position.z = 0.036;
+const halo3 = new THREE.Mesh(new THREE.TorusGeometry(0.081, 0.0009, 8, 72), opticGold);
+halo3.position.z = 0.050;
+coreGroup.add(halo1, halo2, halo3);
 
 const shutterL = new THREE.Object3D();
 const shutterR = new THREE.Object3D();
@@ -635,15 +654,15 @@ function renderAt(t) {
     return 1 - expoOut(seg(t, 0.34, 0.56));
   };
 
-  // Stage 5: Smooth entry into cranial visor (head & upper torso fade BEFORE near-clipping inside lens!)
-  const headEnterFade = seg(t, 0.70, 0.76);
-  const fullBodyFade = seg(t, 0.71, 0.77);
+  // Stage 5: Smooth entry into cranial visor (stay solid up close until lens crosses visor portal t >= 0.75!)
+  const headEnterFade = seg(t, 0.73, 0.80);
+  const fullBodyFade = seg(t, 0.76, 0.84);
 
   for (const pt of parts) {
     const k = explodeAt(pt.group, pt.dark);
     pt.mesh.position.copy(pt.ex).multiplyScalar(k);
-
     if (pt.group === "head") {
+      pt.mesh.position.y += headEnterFade * 0.032;
       pt.mat.opacity = 1 - headEnterFade;
     } else {
       pt.mat.opacity = 1 - fullBodyFade;
@@ -655,18 +674,40 @@ function renderAt(t) {
     pt.holo.material.opacity = wireAlpha * 0.09;
   }
 
-  // Causal Ignition at Stage 4 finish (t=0.56..0.71), dims gracefully as visor opens
-  const ledLevel = seg(t, 0.54, 0.64) * (1 - seg(t, 0.71, 0.78));
+  // Causal Ignition at Stage 4 finish (t=0.52..0.78), dims seamlessly into visor interior
+  const ledLevel = seg(t, 0.52, 0.62) * (1 - seg(t, 0.73, 0.80));
   ledMat.opacity = ledLevel;
 
-  // Reveal Internal Sensor & Neural Core Canyon smoothly right before head fades open (t >= 0.72)
-  internalBay.visible = t >= 0.72;
-  coreSpot.intensity = seg(t, 0.73, 0.94) * 3.0;
+  // Reveal Internal Sensor & Neural Core Canyon strictly INSIDE the visor portal (no exterior background disk!)
+  const enterTunnel = seg(t, 0.76, 0.85);
+  const coreFade = seg(t, 0.78, 0.88);
+  internalBay.visible = enterTunnel > 0.004;
+  tunnelMat.opacity = enterTunnel;
+  ribMat.opacity = enterTunnel;
+  opticGold.opacity = enterTunnel;
+  fiberCyan.opacity = enterTunnel;
+  fiberViolet.opacity = enterTunnel;
+  carrierMat.opacity = coreFade;
+  heatsinkMat.opacity = coreFade;
+  dieBaseMat.opacity = coreFade;
+  chipletDarkMat.opacity = coreFade;
+  chipletCyanMat.opacity = coreFade;
+  waferMat.opacity = seg(t, 0.78, 0.90);
+  dieCoreGridMat.opacity = coreFade * 0.95;
+  fiberCyan.color.setHex(0x00f5ff).multiplyScalar(enterTunnel);
+  fiberViolet.color.setHex(0x7b2ff7).multiplyScalar(enterTunnel);
+  scene.fog.density = 0.165 + seg(t, 0.72, 0.88) * 0.42;
+  keyLight.intensity = 3.2 * (1 - seg(t, 0.72, 0.85) * 0.88);
+  fillLight.intensity = 0.62 * (1 - seg(t, 0.72, 0.85) * 0.90);
+  coreSpot.intensity = coreFade * 2.1;
   lidarGimbal.rotation.x = t * Math.PI * 6;
   halo1.rotation.z = t * Math.PI * 2.5;
   halo2.rotation.z = -t * Math.PI * 1.8;
-  envGroup.visible = t < 0.80;
-  robotRoot.visible = t < 0.81;
+  halo3.rotation.z = t * Math.PI * 1.2;
+  backdropHalo.material.opacity = 1 - seg(t, 0.74, 0.88);
+  backdropHalo.visible = t < 0.89;
+  envGroup.visible = t < 0.94;
+  robotRoot.visible = t < 0.85;
 
   composer.render(1 / 30);
 }

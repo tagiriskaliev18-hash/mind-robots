@@ -12,8 +12,10 @@ async function captureMode(mode, count) {
   fs.rmSync(dir, { recursive: true, force: true });
   fs.mkdirSync(dir, { recursive: true });
 
-  const W = mode === "mobile" ? 720 : 1920;
-  const H = mode === "mobile" ? 1280 : 1080;
+  const W = mode === "mobile" ? 648 : 1600;
+  const H = mode === "mobile" ? 1152 : 900;
+  const outW = mode === "mobile" ? 540 : 1280;
+  const outH = mode === "mobile" ? 960 : 720;
 
   const browser = await chromium.launch({
     headless: true,
@@ -35,9 +37,26 @@ async function captureMode(mode, count) {
     await page.evaluate((val) => window.__story3d.renderAt(val), t);
     const { data } = await cdp.send("Page.captureScreenshot", { format: "png" });
     fs.writeFileSync(path.join(dir, String(i + 1).padStart(4, "0") + ".png"), Buffer.from(data, "base64"));
-    if (i % 45 === 0 || i === count - 1) console.log(`  [${mode}] ${i + 1}/${count} (t=${t.toFixed(3)})`);
+    if (i % 60 === 0 || i === count - 1) console.log(`  [${mode}] ${i + 1}/${count} (t=${t.toFixed(3)})`);
   }
   await browser.close();
+
+  const framesOut = path.resolve(`assets/frames/${mode}`);
+  fs.mkdirSync(framesOut, { recursive: true });
+  for (const f of fs.readdirSync(framesOut)) {
+    if (f.endsWith(".webp")) fs.unlinkSync(path.join(framesOut, f));
+  }
+  await new Promise((resolve, reject) => {
+    const ff = spawn("ffmpeg", [
+      "-y", "-v", "error",
+      "-framerate", "30",
+      "-i", path.join(dir, "%04d.png"),
+      "-vf", `eq=contrast=1.03:saturation=1.04:gamma=0.98,scale=${outW}:${outH}:flags=lanczos`,
+      "-c:v", "libwebp", "-quality", "80", "-compression_level", "4", "-preset", "photo",
+      path.join(framesOut, "%04d.webp")
+    ], { stdio: "inherit" });
+    ff.on("exit", (c) => c === 0 ? resolve() : reject(new Error("ffmpeg webp exit " + c)));
+  });
 
   const mp4 = path.join(OUT_DIR, `story3d_${mode}.mp4`);
   await new Promise((resolve, reject) => {
@@ -45,13 +64,14 @@ async function captureMode(mode, count) {
       "-y", "-v", "error",
       "-framerate", "30",
       "-i", path.join(dir, "%04d.png"),
-      "-c:v", "libx264", "-crf", "14", "-preset", "slow", "-pix_fmt", "yuv420p",
+      "-vf", `eq=contrast=1.03:saturation=1.04:gamma=0.98,scale=${outW}:${outH}:flags=lanczos,format=yuv420p`,
+      "-c:v", "libx264", "-crf", "16", "-preset", "fast", "-pix_fmt", "yuv420p",
       mp4
     ], { stdio: "inherit" });
-    ff.on("exit", (c) => c === 0 ? resolve() : reject(new Error("ffmpeg exit " + c)));
+    ff.on("exit", (c) => c === 0 ? resolve() : reject(new Error("ffmpeg mp4 exit " + c)));
   });
-  console.log(`[${mode}] encoded ${mp4}`);
+  console.log(`[${mode}] wrote ${count} WebPs to ${framesOut} + ${mp4}`);
 }
 
-await captureMode("desktop", 210);
-await captureMode("mobile", 165);
+await captureMode("desktop", 320);
+await captureMode("mobile", 220);
