@@ -108,7 +108,7 @@ function wakeLoop() {
 }
 
 function setNavActive(id) {
-  for (const k of ["navStory", "navLive", "navSpecs"]) {
+  for (const k of ["navStory", "navReel", "navLive", "navSpecs"]) {
     const el = $(k);
     if (el) el.classList.toggle("is-current", k === id);
   }

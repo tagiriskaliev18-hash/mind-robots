@@ -1388,6 +1388,7 @@ function goToStage(i) {
 function wireNavLinks() {
   const navStory = $("#navStory");
   const navLive = $("#navLive");
+  const navReel = $("#navReel");
   const navSpecs = $("#navSpecs");
   const cta = $("#finaleToLive");
 
@@ -1403,6 +1404,7 @@ function wireNavLinks() {
 
   if (navStory) navStory.addEventListener("click", smoothJump("#story"));
   if (navLive) navLive.addEventListener("click", smoothJump("#drive"));
+  if (navReel) navReel.addEventListener("click", smoothJump("#reel"));
   if (navSpecs) navSpecs.addEventListener("click", smoothJump("#reading"));
   if (cta) cta.addEventListener("click", smoothJump("#drive"));
 
@@ -1410,8 +1412,10 @@ function wireNavLinks() {
     const y = window.scrollY + innerHeight * 0.35;
     const driveTop = ($("#drive")?.offsetTop) || Infinity;
     const specsTop = ($("#reading")?.offsetTop) || Infinity;
-    const mode = y >= specsTop ? "specs" : y >= driveTop ? "live" : "story";
+    const reelTop = ($("#reel")?.offsetTop) || Infinity;
+    const mode = y >= specsTop ? "specs" : y >= driveTop ? "live" : y >= reelTop ? "reel" : "story";
     navStory?.classList.toggle("is-current", mode === "story");
+    navReel?.classList.toggle("is-current", mode === "reel");
     navLive?.classList.toggle("is-current", mode === "live");
     navSpecs?.classList.toggle("is-current", mode === "specs");
   };

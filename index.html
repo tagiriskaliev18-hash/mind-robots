@@ -21,6 +21,7 @@
   <link rel="stylesheet" href="css/lenis.css">
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="css/story.css">
+  <link rel="stylesheet" href="css/reel.css">
   <script>
     try {
       if (matchMedia("(prefers-reduced-motion: reduce)").matches) document.documentElement.classList.add("is-still");
@@ -38,8 +39,9 @@
       <span class="brand__sub">Apptronik Apollo</span>
     </a>
     <nav class="mode-switch" aria-label="Разделы страницы">
-      <a href="#story" id="navStory" class="is-current">01 · Сборка</a>
-      <a href="#drive" id="navLive">02 · 3D-стенд</a>
+      <a href="#story" id="navStory" class="is-current"><span class="nm-num">01 · </span>Сборка</a>
+      <a href="#reel" id="navReel"><span class="nm-num">02 · </span>Ролики</a>
+      <a href="#drive" id="navLive"><span class="nm-num">03 · </span>3D-стенд</a>
       <a href="#reading" id="navSpecs">Паспорт</a>
     </nav>
   </header>
@@ -84,6 +86,26 @@
     <video class="act-beam__video" id="actBeamVideo" muted playsinline preload="none" data-src="assets/video/scrub/transition_beam_scrub.mp4"></video>
   </div>
 
+  <!-- ИНТЕРЛЮДИЯ: Apollo в движении — полноэкранные ролики робота (Google Flow) с кинопереходами по скроллу -->
+  <section class="reel" id="reel" aria-label="Apollo в движении — ролики робота">
+    <div class="reel-stage" id="reelStage">
+      <div class="reel-layers" id="reelLayers"></div>
+      <video class="reel-beam" id="reelBeam" muted playsinline preload="none" data-src="assets/video/scrub/transition_beam_scrub.mp4" aria-hidden="true"></video>
+      <div class="reel-scan" id="reelScan" aria-hidden="true"></div>
+      <div class="reel-flash" id="reelFlash" aria-hidden="true"></div>
+      <div class="reel-edge" id="reelEdge" data-dir="v" aria-hidden="true"></div>
+      <div class="reel-ring" id="reelRing" aria-hidden="true"></div>
+      <div class="reel-shade" aria-hidden="true"></div>
+      <span class="reel-tag">AI-видео · Google Flow</span>
+      <div class="reel-exit" id="reelExit" aria-hidden="true">Переход<b>Живой 3D-стенд</b></div>
+      <div class="reel-copy" id="reelCopy" aria-live="polite"></div>
+      <div class="reel-hud">
+        <span class="reel-count" id="reelCount"></span>
+        <nav class="reel-segs" id="reelSegs" aria-label="Ролики робота"></nav>
+      </div>
+    </div>
+  </section>
+
   <!-- АКТ II: Живой real-time 3D-режим с пружинной взрыв-схемой по табам и выносками -->
   <section id="drive" class="live-section" aria-label="Интерактивный 3D-разбор Apptronik Apollo">
     <div class="live-pin" id="livePin">
@@ -117,6 +139,10 @@
       <video class="reading__neural" id="readingNeuralVideo" muted loop playsinline preload="none" data-src="assets/video/scrub/bg_neural_loop_web.mp4"></video>
       <div class="reading__scrim"></div>
     </div>
+    <figure class="reading-hero" id="readingHero">
+      <video id="readingHeroVideo" muted loop playsinline preload="none" poster="assets/video/reel/apollo_05.webp" aria-hidden="true"></video>
+      <figcaption>Паспорт · Apptronik Apollo</figcaption>
+    </figure>
     <h2>Гуманоид промышленного масштаба 1,73 м</h2>
     <p>Apptronik Apollo проектировался совместно с бюро argo design как универсальный помощник под человеческую эргономику: рост 1,73 м и масса 73 кг позволяют работать у стандартных стеллажей и конвейерных линий без перестройки цеха, поднимая до 25 кг полезной нагрузки.</p>
 
@@ -175,5 +201,6 @@
   </script>
   <script type="module" src="js/story.js"></script>
   <script type="module" src="js/main.js"></script>
+  <script type="module" src="js/reel.js"></script>
 </body>
 </html>
