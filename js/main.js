@@ -66,10 +66,21 @@ TABS.forEach((t, i) => {
 $("drive").style.height = (TABS.length + 1) * 100 + "svh";
 let scrollLock = false;
 let liveInView = false;
+let rafId = null;
+let lastCamSig = NaN;
+let lastCoordsStr = "";
+
+function wakeLoop() {
+  if (!rafId) rafId = requestAnimationFrame(tick);
+}
 
 new IntersectionObserver((entries) => {
   liveInView = entries.some((e) => e.isIntersecting);
-}, { rootMargin: "320px 0px" }).observe($("drive"));
+  if (liveInView) wakeLoop();
+}, { rootMargin: "900px 0px" }).observe($("drive"));
+
+$("stage")?.addEventListener("pointerdown", wakeLoop, { passive: true });
+$("stage")?.addEventListener("wheel", wakeLoop, { passive: true });
 
 function scrollToProgress(p, immediate = false) {
   const drive = $("drive");
@@ -118,6 +129,7 @@ function enterHero(fromScroll) {
   title.set(true);
   $("hud-index").textContent = "";
   tabsEl.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", "false"));
+  wakeLoop();
   if (!fromScroll) scrollToProgress(0);
 }
 
@@ -126,6 +138,7 @@ app.scrollToLiveHero = () => {
   scrollToProgress(0, true);
   enterHero(true);
   stage.render(0.016);
+  wakeLoop();
 };
 
 function applyTab(i, fromScroll) {
@@ -143,6 +156,7 @@ function applyTab(i, fromScroll) {
   callouts.show(tab.calls, findPart);
   $("hud-index").innerHTML = String(i + 1).padStart(2, "0") + `<span>/${String(TABS.length).padStart(2, "0")}</span>`;
   tabsEl.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(Number(b.dataset.tab) === i)));
+  wakeLoop();
   if (!fromScroll) scrollToProgress((i + 1) / TABS.length);
 }
 
@@ -181,15 +195,26 @@ function bindScroll() {
 function playIntro() {
   document.documentElement.classList.add("is-ready");
   const heroPhoneMul = isPhone() ? (HERO.phoneRadius ?? 1.18) : 1;
-  if (still || !gsap) {
+  if (still || !gsap || !liveInView) {
     rig.state.locked = false;
-    enterHero(true);
+    rig.setTarget(HERO, isPhone(), heroPhoneMul);
+    Object.assign(rig.state, { radius: rig.state.target.radius, phi: HERO.phi, theta: HERO.theta });
+    rig.state.look.copy(rig.state.target.look);
+    rig.update(0.016);
+    app.mode = "hero";
+    app.tab = -1;
+    app.since = 0;
+    app.err = 0;
+    setGoals(app.parts, null);
+    callouts.hide();
+    title.set(true);
     mats.led.emissiveIntensity = QUALITY.ledEmissive;
     stage.render(0.016);
     bindScroll();
     return;
   }
   app.mode = "intro";
+  wakeLoop();
   const s = rig.state;
   s.locked = true;
   Object.assign(s, { radius: INTRO.radius, phi: INTRO.phi, theta: INTRO.theta });
@@ -252,6 +277,7 @@ async function boot() {
 
   if ($("loader-bar")) $("loader-bar").style.width = "100%";
   await Promise.race([document.fonts?.ready, new Promise((r) => setTimeout(r, 1200))]);
+  await new Promise((r) => setTimeout(r, 0)); // yield one macrotask before GPU shader compile
   stage.renderer.compile(scene, camera);
   playIntro();
 }
@@ -262,13 +288,13 @@ let fpsAcc = 0;
 let fpsN = 0;
 
 function tick(now) {
+  rafId = null;
   const raw = (now - prev) / 1000;
   const dt = Math.min(0.033, Math.max(0.001, raw));
   prev = now;
 
-  // Пауза рендеринга WebGL, когда секция #drive далеко за кадром (бережёт GPU на iPhone во время Акта I)
-  if (!liveInView && app.mode === "hero" && app.err < 0.02) {
-    requestAnimationFrame(tick);
+  // Completely halt Act II WebGL RAF while offscreen during Act I (#story)
+  if (!liveInView && app.mode !== "intro" && app.err < 0.005) {
     return;
   }
 
@@ -289,20 +315,48 @@ function tick(now) {
   title.update(camera, HERO.look[1] + 0.11, isPhone());
   app.titleVisible = title.visible;
   app.err = camErr + settleError(app.parts);
+  const camSig = camera.position.x + camera.position.y * 13 + camera.position.z * 31 + camera.quaternion.x * 53 + camera.quaternion.y * 79;
+  const moved = Math.abs(camSig - lastCamSig) > 1e-4 || app.err > 0.0015 || app.since < 2.2;
+  lastCamSig = camSig;
+
   if (app.mode === "tab") {
     const want = app.err < MOTION.labelShowError || app.since > MOTION.labelShowAfter ? 1 : 0;
-    app.label = still ? 1 : app.label + (want - app.label) * (1 - Math.exp(-MOTION.labelLambda * dt));
-    callouts.update(camera, title.visible ? 0 : app.label);
+    const nextLabel = still ? 1 : app.label + (want - app.label) * (1 - Math.exp(-MOTION.labelLambda * dt));
+    const labelChanged = Math.abs(nextLabel - app.label) > 0.001;
+    app.label = nextLabel;
+    if (moved || labelChanged) {
+      callouts.update(camera, title.visible ? 0 : app.label);
+    }
   }
-  const p = camera.position;
-  $("hud-coords").textContent = `X ${p.x.toFixed(2)} · Y ${p.y.toFixed(2)} · Z ${p.z.toFixed(2)}`;
+  if (moved) {
+    const p = camera.position;
+    const cs = `X ${p.x.toFixed(2)} · Y ${p.y.toFixed(2)} · Z ${p.z.toFixed(2)}`;
+    if (cs !== lastCoordsStr) {
+      lastCoordsStr = cs;
+      $("hud-coords").textContent = cs;
+    }
+  }
   stage.render(dt);
   stage.adapt(dt);
-  requestAnimationFrame(tick);
+  rafId = requestAnimationFrame(tick);
 }
 
-boot().catch((err) => {
-  console.error(err);
-  $("fail").hidden = false;
-});
-requestAnimationFrame(tick);
+// Defer heavy GLB decode/compile briefly so Act I paints frame 1 at 60 FPS with zero boot stall
+function scheduleBoot() {
+  let started = false;
+  const go = () => {
+    if (started) return;
+    started = true;
+    boot().catch((err) => {
+      console.error(err);
+      $("fail").hidden = false;
+    });
+  };
+  const waitStory = () => {
+    if (window.__story?.state()?.ready || liveInView) { go(); return; }
+    setTimeout(waitStory, 80);
+  };
+  setTimeout(go, 950);
+  setTimeout(waitStory, 60);
+}
+scheduleBoot();

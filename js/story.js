@@ -12,23 +12,23 @@ export const STORY = {
   smoothing: { wheel: 10, touch: 7.5 },
   maxFramesPerSecond: 260,
   blend: true,
-  focus: { desktop: [0.58, 0.46], mobile: [0.5, 0.38] },
+  focus: { desktop: [0.50, 0.50], mobile: [0.50, 0.45] },
   sets: {
-    desktop: { dir: "assets/frames/desktop/", count: 279, ext: "webp", pad: 4, w: 1920, h: 1080 },
-    mobile:  { dir: "assets/frames/mobile/",  count: 173, ext: "webp", pad: 4, w: 720,  h: 1280 }
+    desktop: { dir: "assets/frames/desktop/", count: 210, ext: "webp", pad: 4, w: 1440, h: 810 },
+    mobile:  { dir: "assets/frames/mobile/",  count: 165, ext: "webp", pad: 4, w: 640,  h: 1138 }
   },
   video: { desktop: "assets/film-desktop.mp4", mobile: "assets/film-mobile.mp4", fps: 30 },
-  // Piecewise-linear map: scroll progress (0..1) -> film time (0..1).
-  // Gentle slow-downs across each stage midpoint so every stage copy lands on its exact visual milestone; never flat.
+  // Continuous 3D timeline mapping: scroll progress [0..1] -> rendered 3D assembly film [0..1]
+  // 1 wires (0-.115) -> 2 legs/frame (.115-.275) -> 3 arms (.275-.445) -> 4 head/bus (.445-.60) -> 5 hero (.60-.715) -> 6 visor bore (.715-.875) -> 7 core (.875-1.0)
   timeKeys: [
     [0.00, 0.000],
-    [0.05, 0.062], [0.10, 0.112], [0.13, 0.143],
-    [0.17, 0.258], [0.23, 0.286],
-    [0.30, 0.408], [0.36, 0.429],
-    [0.43, 0.550], [0.49, 0.571],
-    [0.56, 0.698], [0.63, 0.714],
-    [0.70, 0.840], [0.77, 0.857],
-    [0.84, 0.966], [0.91, 0.990],
+    [0.13, 0.115],
+    [0.26, 0.275],
+    [0.39, 0.445],
+    [0.52, 0.600],
+    [0.66, 0.715],
+    [0.80, 0.875],
+    [0.93, 0.992],
     [1.00, 1.000]
   ],
   stages: [
@@ -88,44 +88,44 @@ export const STORY = {
       label: "CAD · 1,32 м",
       show: [0.015, 0.12],
       keys: {
-        desktop: [[0, 0.669, 0.300], [40, 0.668, 0.313], [279, 0.668, 0.313]],
-        mobile:  [[0, 0.509, 0.238], [25, 0.509, 0.246], [173, 0.509, 0.246]]
+        desktop: [[0, 0.48, 0.20], [25, 0.49, 0.24], [209, 0.49, 0.24]],
+        mobile:  [[0, 0.54, 0.20], [18, 0.54, 0.22], [164, 0.54, 0.22]]
       }
     },
     {
       label: "Рама Al-7075",
       show: [0.15, 0.245],
       keys: {
-        desktop: [[40, 0.668, 0.313], [80, 0.668, 0.331], [279, 0.668, 0.331]],
-        mobile:  [[25, 0.509, 0.246], [50, 0.509, 0.256], [173, 0.509, 0.256]]
+        desktop: [[25, 0.51, 0.46], [56, 0.50, 0.46], [209, 0.50, 0.46]],
+        mobile:  [[18, 0.51, 0.38], [43, 0.50, 0.36], [164, 0.50, 0.36]]
       }
     },
     {
       label: "PMSM · 120 Н·м",
       show: [0.28, 0.375],
       keys: {
-        desktop: [[80, 0.631, 0.520], [120, 0.629, 0.545], [279, 0.629, 0.545]],
-        mobile:  [[50, 0.485, 0.355], [75, 0.482, 0.368], [173, 0.482, 0.368]]
+        desktop: [[58, 0.38, 0.44], [90, 0.37, 0.41], [209, 0.37, 0.41]],
+        mobile:  [[44, 0.28, 0.43], [72, 0.27, 0.40], [164, 0.27, 0.40]]
       }
     },
     {
       label: "Шина 1 кГц",
       show: [0.41, 0.505],
       keys: {
-        desktop: [[120, 0.668, 0.349], [160, 0.668, 0.368], [279, 0.668, 0.368]],
-        mobile:  [[75, 0.509, 0.268], [100, 0.509, 0.280], [173, 0.509, 0.280]]
+        desktop: [[92, 0.49, 0.44], [122, 0.50, 0.45], [209, 0.50, 0.45]],
+        mobile:  [[73, 0.50, 0.34], [96, 0.50, 0.35], [164, 0.50, 0.35]]
       }
     },
     {
       label: "3D-лидар 360°",
       show: [0.68, 0.785],
       keys: {
-        desktop: [[200, 0.662, 0.200], [240, 0.615, 0.355], [279, 0.615, 0.355]],
-        mobile:  [[125, 0.509, 0.175], [150, 0.525, 0.315], [173, 0.525, 0.315]]
+        desktop: [[150, 0.50, 0.40], [180, 0.50, 0.48], [209, 0.50, 0.48]],
+        mobile:  [[118, 0.50, 0.36], [142, 0.50, 0.47], [164, 0.50, 0.47]]
       }
     }
   ],
-  fx: { enabled: true, count: { desktop: 68, mobile: 30 }, color: [0, 245, 255], speed: 2.5 }
+  fx: { enabled: true, count: { desktop: 28, mobile: 0 }, color: [0, 245, 255], speed: 2.5 }
 };
 
 window.__STORY_STAGES = STORY.stages;
@@ -136,11 +136,159 @@ const storyEl = $("#story");
 const stageEl = $("#storyStage");
 const mediaEl = $("#media");
 const canvas = $("#film");
-const ctx = canvas.getContext("2d", { alpha: false });
 const poster = $("#poster");
 const videoEl = $("#filmVideo");
 const fxCanvas = $("#fx");
 const fx = fxCanvas.getContext("2d");
+
+/* ---------- GPU WebGL2 Textured Quad Renderer (0.2ms draw, 2D fallback) ---------- */
+function createFilmRenderer(cvs) {
+  const gl = cvs.getContext("webgl2", {
+    alpha: false,
+    antialias: false,
+    depth: false,
+    stencil: false,
+    powerPreference: "high-performance",
+    preserveDrawingBuffer: false
+  });
+  if (!gl) {
+    const ctx2d = cvs.getContext("2d", { alpha: false });
+    return {
+      isGL: false,
+      setSmoothing() {
+        ctx2d.imageSmoothingEnabled = true;
+        ctx2d.imageSmoothingQuality = "medium";
+      },
+      draw(entryA, entryB, mix, vw) {
+        const d = vw.dpr;
+        ctx2d.globalAlpha = 1;
+        ctx2d.drawImage(entryA.src, vw.dx * d, vw.dy * d, vw.dw * d, vw.dh * d);
+        if (entryB && mix > 0.02) {
+          ctx2d.globalAlpha = mix;
+          ctx2d.drawImage(entryB.src, vw.dx * d, vw.dy * d, vw.dw * d, vw.dh * d);
+        }
+        ctx2d.globalAlpha = 1;
+      }
+    };
+  }
+
+  const compile = (type, src) => {
+    const s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    return s;
+  };
+  const prog = gl.createProgram();
+  gl.attachShader(prog, compile(gl.VERTEX_SHADER, `#version 300 es
+    in vec2 a_pos;
+    out vec2 v_uv;
+    void main() {
+      v_uv = vec2(a_pos.x * 0.5 + 0.5, 0.5 - a_pos.y * 0.5);
+      gl_Position = vec4(a_pos, 0.0, 1.0);
+    }
+  `));
+  gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, `#version 300 es
+    precision highp float;
+    in vec2 v_uv;
+    uniform sampler2D u_texA;
+    uniform sampler2D u_texB;
+    uniform float u_mix;
+    uniform vec2 u_scale;
+    uniform vec2 u_offset;
+    out vec4 outColor;
+    void main() {
+      vec2 tuv = v_uv * u_scale + u_offset;
+      vec4 col = texture(u_texA, tuv);
+      if (u_mix > 0.015) {
+        col = mix(col, texture(u_texB, tuv), u_mix);
+      }
+      vec2 d = v_uv - 0.5;
+      float vig = 1.0 - smoothstep(0.42, 0.92, dot(d, d) * 1.45) * 0.34;
+      outColor = vec4(col.rgb * vig, 1.0);
+    }
+  `));
+  gl.linkProgram(prog);
+  gl.useProgram(prog);
+
+  const buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+  const loc = gl.getAttribLocation(prog, "a_pos");
+  gl.enableVertexAttribArray(loc);
+  gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+
+  const mkTex = (unit) => {
+    const t = gl.createTexture();
+    gl.activeTexture(gl.TEXTURE0 + unit);
+    gl.bindTexture(gl.TEXTURE_2D, t);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 0);
+    return t;
+  };
+  const texA = mkTex(0);
+  const texB = mkTex(1);
+  gl.uniform1i(gl.getUniformLocation(prog, "u_texA"), 0);
+  gl.uniform1i(gl.getUniformLocation(prog, "u_texB"), 1);
+  const uMix = gl.getUniformLocation(prog, "u_mix");
+  const uScale = gl.getUniformLocation(prog, "u_scale");
+  const uOffset = gl.getUniformLocation(prog, "u_offset");
+
+  let idA = -1;
+  let idB = -1;
+  let wA = 0, hA = 0, wB = 0, hB = 0;
+
+  return {
+    isGL: true,
+    setSmoothing() {},
+    draw(entryA, entryB, mix, vw) {
+      gl.viewport(0, 0, cvs.width, cvs.height);
+      const sx = vw.cw / (vw.dw || 1);
+      const sy = vw.ch / (vw.dh || 1);
+      const ox = -vw.dx / (vw.dw || 1);
+      const oy = -vw.dy / (vw.dh || 1);
+      gl.uniform2f(uScale, sx, sy);
+      gl.uniform2f(uOffset, ox, oy);
+      if (entryA.id !== idA) {
+        const s = entryA.src;
+        const sw = s.width || s.videoWidth || 0;
+        const sh = s.height || s.videoHeight || 0;
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, texA);
+        if (sw && sw === wA && sh === hA) {
+          gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, s);
+        } else {
+          wA = sw; hA = sh;
+          gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, s);
+        }
+        idA = entryA.id;
+      }
+      if (entryB && mix > 0.015) {
+        if (entryB.id !== idB) {
+          const s = entryB.src;
+          const sw = s.width || s.videoWidth || 0;
+          const sh = s.height || s.videoHeight || 0;
+          gl.activeTexture(gl.TEXTURE1);
+          gl.bindTexture(gl.TEXTURE_2D, texB);
+          if (sw && sw === wB && sh === hB) {
+            gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, s);
+          } else {
+            wB = sw; hB = sh;
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, s);
+          }
+          idB = entryB.id;
+        }
+        gl.uniform1f(uMix, mix);
+      } else {
+        gl.uniform1f(uMix, 0);
+      }
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    }
+  };
+}
+const filmRenderer = createFilmRenderer(canvas);
 
 const reduced = root.classList.contains("is-still") || matchMedia("(prefers-reduced-motion: reduce)").matches;
 const finePointer = matchMedia("(hover: hover) and (pointer: fine)").matches;
@@ -166,48 +314,109 @@ function mapKeys(p, keys) {
 }
 
 /* ---------- Progressive coarse->fine frame preloader ---------- */
+/* ---------- Bounded Compressed Blob Store + Off-Main-Thread ImageBitmap LRU ---------- */
+const MAX_DECODED = 52;
+let canImageBitmap = typeof createImageBitmap === "function";
+
 const store = {
-  imgs: new Array(SET.count),
+  blobs: new Array(SET.count),
   ok: new Uint8Array(SET.count),
   loaded: 0,
-  nearest(i) {
-    if (this.ok[i]) return i;
+  lru: new Map(),      // frameIndex -> { id, src: ImageBitmap | HTMLImageElement, isBmp }
+  decoding: new Set(),
+  nearestDecoded(i) {
+    if (this.lru.has(i)) return i;
     for (let d = 1; d < SET.count; d++) {
-      if (i - d >= 0 && this.ok[i - d]) return i - d;
-      if (i + d < SET.count && this.ok[i + d]) return i + d;
+      if (i - d >= 0 && this.lru.has(i - d)) return i - d;
+      if (i + d < SET.count && this.lru.has(i + d)) return i + d;
     }
     return -1;
   }
 };
 
-function loadFrame(i, attempt = 0) {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.decoding = "async";
-    img.src = frameURL(i);
-    const done = () => {
-      store.imgs[i] = img;
-      store.ok[i] = 1;
-      store.loaded++;
-      resolve(true);
-    };
-    const fail = () => {
-      if (attempt < 2) {
-        setTimeout(() => loadFrame(i, attempt + 1).then(resolve), 140 * (attempt + 1));
+function putLru(i, entry) {
+  if (store.lru.has(i)) {
+    const prev = store.lru.get(i);
+    if (prev.isBmp) try { prev.src.close(); } catch {}
+    store.lru.delete(i);
+  }
+  store.lru.set(i, entry);
+  while (store.lru.size > MAX_DECODED) {
+    const oldestKey = store.lru.keys().next().value;
+    if (oldestKey === i) break;
+    const old = store.lru.get(oldestKey);
+    store.lru.delete(oldestKey);
+    if (old?.isBmp) try { old.src.close(); } catch {}
+  }
+}
+
+async function decodeToLru(i) {
+  const blob = store.blobs[i];
+  if (!blob || store.lru.has(i) || store.decoding.has(i)) return;
+  store.decoding.add(i);
+  try {
+    if (canImageBitmap) {
+      try {
+        const bmp = await createImageBitmap(blob);
+        putLru(i, { id: i, src: bmp, isBmp: true });
+        dirty = true;
         return;
+      } catch {
+        canImageBitmap = false;
       }
-      console.warn("story frame missing", i);
-      resolve(false);
-    };
-    img.decode().then(done, () => {
-      if (img.complete && img.naturalWidth) done();
-      else if (img.complete) fail();
-      else {
-        img.onload = done;
-        img.onerror = fail;
-      }
+    }
+    await new Promise((resolve) => {
+      const objUrl = URL.createObjectURL(blob);
+      const img = new Image();
+      img.decoding = "async";
+      img.onload = () => {
+        URL.revokeObjectURL(objUrl);
+        putLru(i, { id: i, src: img, isBmp: false });
+        dirty = true;
+        resolve();
+      };
+      img.onerror = () => { URL.revokeObjectURL(objUrl); resolve(); };
+      img.src = objUrl;
     });
-  });
+  } finally {
+    store.decoding.delete(i);
+  }
+}
+
+function prefetchWindow(center) {
+  if (store.decoding.size >= 2) return;
+  const start = Math.max(0, center - 2);
+  const end = Math.min(SET.count - 1, center + 5);
+  for (let i = center; i <= end && store.decoding.size < 2; i++) {
+    if (store.blobs[i] && !store.lru.has(i) && !store.decoding.has(i)) {
+      decodeToLru(i);
+    }
+  }
+  for (let i = center - 1; i >= start && store.decoding.size < 2; i--) {
+    if (store.blobs[i] && !store.lru.has(i) && !store.decoding.has(i)) {
+      decodeToLru(i);
+    }
+  }
+}
+
+async function loadFrame(i, attempt = 0) {
+  if (store.ok[i]) return true;
+  try {
+    const res = await fetch(frameURL(i));
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const blob = await res.blob();
+    store.blobs[i] = blob;
+    store.ok[i] = 1;
+    store.loaded++;
+    return true;
+  } catch {
+    if (attempt < 2) {
+      await new Promise((r) => setTimeout(r, 120 * (attempt + 1)));
+      return loadFrame(i, attempt + 1);
+    }
+    console.warn("story frame missing", i);
+    return false;
+  }
 }
 
 function preloadOrder() {
@@ -236,7 +445,7 @@ async function runPool(list, concurrency, onEach) {
     while (k < list.length) {
       const i = list[k++];
       await loadFrame(i);
-      if (onEach) onEach();
+      if (onEach) onEach(i);
     }
   };
   await Promise.all(Array.from({ length: Math.min(concurrency, list.length) }, worker));
@@ -247,8 +456,15 @@ async function preloadFrames(onProgress) {
   const passes = preloadOrder();
   const gate = passes[0].concat(passes[1]);
   let n = 0;
-  await runPool(gate, 6, () => onProgress(++n / gate.length));
+  await runPool(gate, 6, async (i) => {
+    await decodeToLru(i);
+    onProgress(++n / gate.length);
+  });
+  // Warm frames 0..16 immediately so start-of-scroll never stalls
   (async () => {
+    await runPool(Array.from({ length: Math.min(18, SET.count) }, (_, k) => k), 4, (i) => {
+      if (i < 16) decodeToLru(i);
+    });
     for (const pass of passes.slice(2)) await runPool(pass, 4);
     dirty = true;
   })();
@@ -259,16 +475,16 @@ const view = { cw: 0, ch: 0, dpr: 1, dx: 0, dy: 0, dw: 0, dh: 0, mx: 0, my: 0, s
 function resize() {
   const r = mediaEl.getBoundingClientRect();
   const s = stageEl.getBoundingClientRect();
-  const maxDpr = Math.max(1, (SET.w * 1.5) / Math.max(1, r.width));
-  view.dpr = Math.min(window.devicePixelRatio || 1, 2, maxDpr);
+  const capDpr = setName === "mobile" ? 1.5 : 1.25;
+  view.dpr = Math.min(window.devicePixelRatio || 1, capDpr);
   view.cw = r.width;
   view.ch = r.height;
   view.sw = s.width;
   view.sh = s.height;
   view.mx = mediaEl.offsetLeft;
   view.my = mediaEl.offsetTop;
-  canvas.width = Math.round(r.width * view.dpr);
-  canvas.height = Math.round(r.height * view.dpr);
+  canvas.width = Math.max(1, Math.round(r.width * view.dpr));
+  canvas.height = Math.max(1, Math.round(r.height * view.dpr));
   const [fxF, fyF] = STORY.focus[setName];
   const sc = Math.max(view.cw / SET.w, view.ch / SET.h);
   view.dw = SET.w * sc;
@@ -276,19 +492,11 @@ function resize() {
   view.dx = (view.cw - view.dw) * fxF;
   view.dy = (view.ch - view.dh) * fyF;
   if (videoEl) videoEl.style.objectPosition = `${fxF * 100}% ${fyF * 100}%`;
-  const fdpr = Math.min(window.devicePixelRatio || 1, 2);
-  fxCanvas.width = Math.round(s.width * fdpr);
-  fxCanvas.height = Math.round(s.height * fdpr);
-  fx.setTransform(fdpr, 0, 0, fdpr, 0, 0);
-  ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = "high";
+  fxCanvas.width = Math.max(1, Math.round(s.width));
+  fxCanvas.height = Math.max(1, Math.round(s.height));
+  fx.setTransform(1, 0, 0, 1, 0, 0);
+  filmRenderer.setSmoothing();
   dirty = true;
-}
-
-function drawImg(img, alpha) {
-  const d = view.dpr;
-  ctx.globalAlpha = alpha;
-  ctx.drawImage(img, view.dx * d, view.dy * d, view.dw * d, view.dh * d);
 }
 
 let lastDrawn = -1;
@@ -297,13 +505,15 @@ function renderFrames(f) {
   const a = Math.floor(f);
   const b = Math.min(SET.count - 1, a + 1);
   const frac = f - a;
-  const ia = store.nearest(a);
+  prefetchWindow(a);
+  const ia = store.nearestDecoded(a);
   if (ia < 0) return;
-  drawImg(store.imgs[ia], 1);
-  if (STORY.blend && frac > 0.02 && store.ok[a] && store.ok[b] && b !== a) {
-    drawImg(store.imgs[b], frac);
-  }
-  ctx.globalAlpha = 1;
+  const entryA = store.lru.get(ia);
+  // Touch LRU MRU order cleanly
+  store.lru.delete(ia);
+  store.lru.set(ia, entryA);
+  const entryB = STORY.blend && frac > 0.02 && b !== a && ia === a && store.lru.has(b) ? store.lru.get(b) : null;
+  filmRenderer.draw(entryA, entryB, entryB ? frac : 0, view);
   lastDrawn = f;
   dirty = false;
 }
@@ -345,6 +555,9 @@ const callouts = STORY.callouts.map((c) => {
 
 let active = -1;
 let hintText = null;
+const copyHidden = new Uint8Array(STORY.stages.length);
+const calloutHidden = new Uint8Array(STORY.callouts.length);
+let lastFinaleO = -1;
 
 function updateUI(p, f) {
   STORY.stages.forEach((s, i) => {
@@ -366,11 +579,14 @@ function updateUI(p, f) {
         y = 0;
       }
     }
+    const vis = o > 0.001;
+    if (!vis && copyHidden[i]) return;
+    copyHidden[i] = vis ? 0 : 1;
     if (reduced) y = 0;
     const el = copyItems[i];
-    el.style.opacity = o.toFixed(3);
-    el.style.transform = `translate3d(0, ${y.toFixed(2)}px, 0)`;
-    el.style.visibility = o > 0.001 ? "visible" : "hidden";
+    el.style.opacity = vis ? o.toFixed(3) : "0";
+    if (vis) el.style.transform = `translate3d(0, ${y.toFixed(2)}px, 0)`;
+    el.style.visibility = vis ? "visible" : "hidden";
   });
 
   let a = STORY.stages.findIndex((s) => p >= s.from && p < s.to);
@@ -388,13 +604,27 @@ function updateUI(p, f) {
     hintText = next;
     hintNext.textContent = hintText;
   }
-  hintEl.classList.toggle("is-hidden", !next || p > STORY.finale.from - 0.015);
+  const hideHint = !next || p > STORY.finale.from - 0.015;
+  hintEl.classList.toggle("is-hidden", hideHint);
 
   const fo = smooth(clamp((p - STORY.finale.from) / (STORY.finale.to - STORY.finale.from), 0, 1));
-  finaleEl.style.opacity = fo.toFixed(3);
-  finaleEl.classList.toggle("is-interactive", fo > 0.65);
+  if (Math.abs(fo - lastFinaleO) > 0.002 || (fo === 0 && lastFinaleO !== 0) || (fo === 1 && lastFinaleO !== 1)) {
+    lastFinaleO = fo;
+    finaleEl.style.opacity = fo.toFixed(3);
+    finaleEl.classList.toggle("is-interactive", fo > 0.65);
+  }
 
-  for (const { c, el } of callouts) {
+  for (let idx = 0; idx < callouts.length; idx++) {
+    const { c, el } = callouts[idx];
+    const [s0, s1] = c.show;
+    const w = 0.014;
+    const o = Math.min(smooth(clamp((p - s0) / w, 0, 1)), smooth(clamp((s1 - p) / w, 0, 1)));
+    const vis = o > 0.002;
+    if (!vis && calloutHidden[idx]) continue;
+    calloutHidden[idx] = vis ? 0 : 1;
+    el.style.opacity = vis ? o.toFixed(3) : "0";
+    if (!vis) continue;
+
     const keys = c.keys[setName];
     if (!keys) continue;
     let x = keys[0][1];
@@ -414,10 +644,6 @@ function updateUI(p, f) {
     }
     const sx = view.mx + par.x + view.dx + x * view.dw;
     const sy = view.my + par.y + view.dy + y2 * view.dh;
-    const [s0, s1] = c.show;
-    const w = 0.014;
-    const o = Math.min(smooth(clamp((p - s0) / w, 0, 1)), smooth(clamp((s1 - p) / w, 0, 1)));
-    el.style.opacity = o.toFixed(3);
     el.style.transform = `translate3d(${sx.toFixed(1)}px, ${(sy - 11).toFixed(1)}px, 0)`;
   }
 }
@@ -442,12 +668,25 @@ function spawn(z) {
   };
 }
 const motes = fxOn ? Array.from({ length: STORY.fx.count[setName] }, () => spawn(Math.random())) : [];
+if (!motes.length) fxCanvas.style.display = "none";
+// Pre-baked 16x16 soft cyan glow sprite avoids 40x arc()/fill() path rasterization per frame
+const moteSprite = (() => {
+  const c = document.createElement("canvas");
+  c.width = c.height = 16;
+  const g = c.getContext("2d");
+  const [r, gr, b] = STORY.fx.color;
+  const grad = g.createRadialGradient(8, 8, 0.5, 8, 8, 8);
+  grad.addColorStop(0, `rgba(${r},${gr},${b},1)`);
+  grad.addColorStop(1, `rgba(${r},${gr},${b},0)`);
+  g.fillStyle = grad;
+  g.fillRect(0, 0, 16, 16);
+  return c;
+})();
 
 function drawFx(dFilm, dt) {
-  if (!fxOn) return;
+  if (!fxOn || !storyInView || !motes.length) return;
   const w = view.sw;
   const h = view.sh;
-  const [r, g, b] = STORY.fx.color;
   fx.clearRect(0, 0, w, h);
   for (const m of motes) {
     m.z -= dFilm * STORY.fx.speed + dt * 0.0035;
@@ -457,14 +696,12 @@ function drawFx(dFilm, dt) {
     const s = 0.55 / m.z;
     const px = w / 2 + m.x * s * w * 0.5 + par.x * (1 / m.z);
     const py = h / 2 + m.y * s * h * 0.5 + par.y * (1 / m.z);
-    if (px < -10 || px > w + 10 || py < -10 || py > h + 10) continue;
-    const rad = m.r * s;
-    const alpha = m.a * clamp((1.05 - m.z) * 3, 0, 1) * clamp(m.z * 4, 0, 1);
-    fx.fillStyle = `rgba(${r},${g},${b},${alpha.toFixed(3)})`;
-    fx.beginPath();
-    fx.arc(px, py, Math.max(0.4, rad), 0, 6.283);
-    fx.fill();
+    if (px < -12 || px > w + 12 || py < -12 || py > h + 12) continue;
+    const sz = Math.max(2, m.r * s * 3.5);
+    fx.globalAlpha = m.a * clamp((1.05 - m.z) * 3, 0, 1) * clamp(m.z * 4, 0, 1);
+    fx.drawImage(moteSprite, (px - sz * 0.5) | 0, (py - sz * 0.5) | 0, sz, sz);
   }
+  fx.globalAlpha = 1;
 }
 
 /* ---------- Scroll: Lenis (wheel only) + ScrollTrigger ---------- */
@@ -545,7 +782,10 @@ wireNavLinks();
 
 /* ---------- Single GSAP ticker loop ---------- */
 let ready = false;
-let lastF = 0;
+let lastF = -1;
+let lastUiP = -1;
+let lastUiPx = 0;
+let lastUiPy = 0;
 const stats = { maxSpeed: 0 };
 
 gsap.ticker.lagSmoothing(0);
@@ -579,8 +819,15 @@ gsap.ticker.add((time, deltaMs) => {
   renderFrames(f);
   par.x += (par.tx - par.x) * (1 - Math.exp(-4 * dt));
   par.y += (par.ty - par.y) * (1 - Math.exp(-4 * dt));
-  mediaEl.style.transform = `translate3d(${par.x.toFixed(2)}px, ${par.y.toFixed(2)}px, 0)`;
-  updateUI(current, f);
+  if (Math.abs(par.x - lastUiPx) > 0.04 || Math.abs(par.y - lastUiPy) > 0.04) {
+    mediaEl.style.transform = `translate3d(${par.x.toFixed(2)}px, ${par.y.toFixed(2)}px, 0)`;
+  }
+  if (Math.abs(f - lastF) > 0.002 || Math.abs(current - lastUiP) > 0.0002 || Math.abs(par.x - lastUiPx) > 0.06) {
+    updateUI(current, f);
+    lastUiP = current;
+    lastUiPx = par.x;
+    lastUiPy = par.y;
+  }
   drawFx(Math.abs(dFilm), dt);
   lastF = f;
 });
@@ -607,8 +854,10 @@ resize();
     console.warn("story preload fallback to poster", e);
   }
   await (document.fonts?.ready || Promise.resolve()).catch(() => {});
-  ready = true;
   dirty = true;
+  renderFrames(0);
+  updateUI(current, lastF);
+  ready = true;
   root.classList.add("story-ready");
   $("#preloader")?.classList.add("is-done");
   ScrollTrigger.refresh();

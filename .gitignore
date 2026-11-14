@@ -3,5 +3,7 @@ critic/
 tools/shots/
 tools/.cache_g1/
 tools/.cache_hf/
+tools/.cache_3d/
+assets/*.bak-*/
 tools/__pycache__/
 __pycache__/

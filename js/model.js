@@ -86,13 +86,18 @@ export async function loadModel(url, renderer, mats, onProgress) {
 function toFloat(src) {
   const geo = new THREE.BufferGeometry();
   for (const [key, attr] of Object.entries(src.attributes)) {
-    const data = new Float32Array(attr.count * attr.itemSize);
-    for (let i = 0; i < attr.count; i++) {
-      for (let k = 0; k < attr.itemSize; k++) data[i * attr.itemSize + k] = attr.getComponent(i, k);
+    let data;
+    if (!attr.isInterleavedBufferAttribute && !attr.normalized && attr.array instanceof Float32Array) {
+      data = new Float32Array(attr.array);
+    } else {
+      data = new Float32Array(attr.count * attr.itemSize);
+      for (let i = 0; i < attr.count; i++) {
+        for (let k = 0; k < attr.itemSize; k++) data[i * attr.itemSize + k] = attr.getComponent(i, k);
+      }
     }
     geo.setAttribute(key, new THREE.BufferAttribute(data, attr.itemSize));
   }
-  if (src.index) geo.setIndex(Array.from(src.index.array));
+  if (src.index) geo.setIndex(src.index.clone());
   if (!geo.attributes.normal) geo.computeVertexNormals();
   return geo;
 }

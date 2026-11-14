@@ -166,8 +166,8 @@ export const MOTION = {
 
 export const QUALITY = {
   dprDesktop: 1.5,
-  dprPhone: 2,
-  dprLow: 1.35,
+  dprPhone: 1.35,
+  dprLow: 1.15,
   dprMin: 1,
   budgetMs: 22,
   sampleFrames: 45,

@@ -85,11 +85,11 @@ export function createStage(canvas) {
       Object.assign(ao.configuration, {
         screenSpaceRadius: true,
         aoRadius: isPhone() ? QUALITY.ao.radiusPhone : QUALITY.ao.radiusDesk,
-        aoSamples: isPhone() ? 8 : 16,
-        denoiseSamples: isPhone() ? 4 : 8,
+        aoSamples: isPhone() ? 4 : 8,
+        denoiseSamples: 4,
         distanceFalloff: QUALITY.ao.distanceFalloff,
         intensity: QUALITY.ao.intensity,
-        halfRes: false,
+        halfRes: true,
         color: new THREE.Color(0x000000)
       });
       composer.addPass(ao);
@@ -98,7 +98,7 @@ export function createStage(canvas) {
     composer.addPass(new EffectPass(
       camera,
       bloom,
-      new SMAAEffect({ preset: SMAAPreset.HIGH }),
+      new SMAAEffect({ preset: isPhone() ? SMAAPreset.MEDIUM : SMAAPreset.HIGH }),
       new ToneMappingEffect({ mode: ToneMappingMode.AGX })
     ));
   } catch (err) {
